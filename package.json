@@ -1,0 +1,36 @@
+{
+  "name": "flappy-nature",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:watch": "turbo test -- --watch",
+    "storybook": "turbo storybook --filter=@repo/ui",
+    "validate-architecture": "npx tsx scripts/validate-architecture.ts",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "tsx": "^4.19.2",
+    "turbo": "^2.8.10",
+    "typescript": "5.9.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json}": ["biome check --write --no-errors-on-unmatched"]
+  },
+  "packageManager": "pnpm@10.10.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+  }
+}
