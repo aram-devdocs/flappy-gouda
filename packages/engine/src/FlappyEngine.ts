@@ -88,7 +88,6 @@ export class FlappyEngine {
   stop(): void {
     this.loop.stop();
   }
-
   destroy(): void {
     this.loop.stop();
     this.events.clearAll();
@@ -131,7 +130,6 @@ export class FlappyEngine {
     this.state.resume();
     if (this.state.state === 'play') this.loop.resetAfterPause();
   }
-
   getState() {
     return this.state.state;
   }
@@ -150,18 +148,17 @@ export class FlappyEngine {
   off<K extends EngineEventName>(event: K, cb: EngineEvents[K]): void {
     this.events.off(event, cb);
   }
-
   private doReset(): void {
     resetEngine(this.state, this.loop, this.bird, this.prevBird, this.config, (n) => {
       this.pipeActiveCount = n;
     });
   }
-
   private update(dt: number, now: number): void {
     this.loop.globalTime = now;
     updateClouds(this.clouds, this.config, dt);
     this.bg.update(dt, now, this.state.state === 'play');
     if (this.state.state === 'dying') {
+      syncPrevBird(this.prevBird, this.bird);
       if (updateDyingBird(this.bird, this.config, dt)) {
         this.state.finishDeath();
       }
