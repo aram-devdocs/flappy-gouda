@@ -16,3 +16,33 @@ export {
   parseBridgeScores,
   areAllScoresZero,
 } from './migration.js';
+
+// Draw functions
+export { drawBird, drawPipes, drawScore, drawSettingsIcon } from './renderer-entities.js';
+export {
+  drawBuilding,
+  drawTree,
+  drawPlane,
+  drawSkylineSegment,
+  drawCloudsPrerendered,
+} from './renderer-background.js';
+export { prerenderCloud, buildPipeLipCache, buildGradients } from './renderer-prerender.js';
+export { generateSkylineSegment } from './skyline.js';
+export { loadHeartImage } from './heart.js';
+export { buildFontCache } from './cache.js';
+export { Renderer } from './renderer.js';
+
+// Supporting types
+export type { IconBounds } from './renderer-entities.js';
+export type { PipeLipCache, GradientCache } from './renderer-prerender.js';
+export type { CachedFonts } from './cache.js';
+
+// Constants needed by stories
+export { TAU, DEG_TO_RAD } from './math.js';
+export {
+  PIPE_LIP,
+  BIRD_ROTATION,
+  CLOUD_PARAMS,
+  PIPE_SPAWN_MARGIN,
+  SKYLINE_CITIES,
+} from './config.js';

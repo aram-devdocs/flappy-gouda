@@ -90,12 +90,51 @@ for (const [level, comps] of byLevel) {
   }
 }
 
+// Canvas asset story coverage
+const canvasStoriesDir = join(ROOT, 'packages', 'flappy-nature-game', 'src', 'stories', 'canvas');
+const expectedCanvasStories = [
+  'Bird',
+  'Pipes',
+  'Cloud',
+  'Skyline',
+  'Buildings',
+  'Trees',
+  'Plane',
+  'Ground',
+  'ScoreAndUI',
+  'FullScene',
+];
+
+const canvasResults: { name: string; exists: boolean }[] = [];
+for (const name of expectedCanvasStories) {
+  const storyPath = join(canvasStoriesDir, `${name}.stories.tsx`);
+  canvasResults.push({ name, exists: existsSync(storyPath) });
+}
+
+const canvasCovered = canvasResults.filter((r) => r.exists).length;
+const canvasTotal = expectedCanvasStories.length;
+
+console.log(
+  `\nCanvas asset coverage: ${canvasCovered}/${canvasTotal} assets (${canvasTotal > 0 ? Math.round((canvasCovered / canvasTotal) * 100) : 0}%)`,
+);
+for (const r of canvasResults) {
+  console.log(`  ${r.exists ? 'ok' : 'MISSING'} ${r.name}`);
+}
+
+const missingCanvas = canvasResults.filter((r) => !r.exists);
+
 if (missing.length > 0 && !shouldFix) {
   console.error(
     `\nStorybook coverage validation FAILED: ${missing.length} component(s) missing stories.`,
   );
   console.error('Run with --fix to generate skeleton story files.');
   process.exit(2);
-} else if (missing.length === 0) {
+} else if (missingCanvas.length > 0) {
+  console.error(
+    `\nCanvas asset coverage validation FAILED: ${missingCanvas.length} asset story file(s) missing.`,
+  );
+  for (const r of missingCanvas) console.error(`  MISSING: ${r.name}.stories.tsx`);
+  process.exit(2);
+} else if (missing.length === 0 && missingCanvas.length === 0) {
   console.log('\nStorybook coverage validation passed. 100% coverage.');
 }

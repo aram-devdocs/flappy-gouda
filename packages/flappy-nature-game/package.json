@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
+    "@storybook/react": "^8.6.17",
     "@testing-library/react": "^16.1.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
