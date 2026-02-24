@@ -36,7 +36,11 @@ export function LeaderboardProvider({ children }: LeaderboardProviderProps) {
     service
       .initAuth()
       .then(() => setReady(true))
-      .catch(() => setReady(true));
+      .catch((err: unknown) => {
+        // biome-ignore lint/suspicious/noConsole: operational warning for auth failure
+        console.warn('[leaderboard] auth init failed, continuing without auth:', err);
+        setReady(true);
+      });
 
     return () => {
       service.dispose();

@@ -5,7 +5,7 @@ import {
   type LeaderboardData,
   useNickname,
 } from '@repo/flappy-nature-game';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLeaderboard } from '../hooks/useLeaderboard.js';
 import { useLeaderboardRealtime } from '../hooks/useLeaderboardRealtime.js';
 import { useLeaderboardService } from './LeaderboardProvider.js';
@@ -36,24 +36,24 @@ export function GameWithLeaderboard() {
   const callbacks: LeaderboardCallbacks = useMemo(
     () => ({
       onScoreSubmit: (score: number, diff: DifficultyKey) => {
-        service.submitScore(score, diff).catch(() => {});
+        service.submitScore(score, diff).catch((err: unknown) => {
+          // biome-ignore lint/suspicious/noConsole: operational warning for failed score submission
+          console.warn('[leaderboard] score submit failed:', err);
+        });
       },
       onNicknameSet: (name: string) => {
         service
           .registerNickname(name)
           .then(() => setNickname(name))
-          .catch(() => {});
+          .catch((err: unknown) => {
+            // biome-ignore lint/suspicious/noConsole: operational warning for failed registration
+            console.warn('[leaderboard] nickname registration failed:', err);
+          });
       },
       onNicknameCheck: (name: string) => service.checkNickname(name),
     }),
     [service, setNickname],
   );
-
-  const handleStateChange = useCallback((state: string) => {
-    if (state === 'play') {
-      // Difficulty is already set from the game's internal state
-    }
-  }, []);
 
   return (
     <FlappyNatureGame
@@ -61,7 +61,6 @@ export function GameWithLeaderboard() {
       leaderboard={leaderboardData}
       leaderboardCallbacks={callbacks}
       nickname={nickname}
-      onStateChange={handleStateChange}
     />
   );
 }

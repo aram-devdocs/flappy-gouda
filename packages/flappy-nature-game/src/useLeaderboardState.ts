@@ -80,8 +80,9 @@ export function useLeaderboardState(
       } else {
         setNicknameError(result.reason ?? 'Nickname unavailable');
       }
-    } catch {
-      setNicknameError('Check failed. Try again.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Check failed';
+      setNicknameError(`${message}. Try again.`);
     } finally {
       setNicknameChecking(false);
     }

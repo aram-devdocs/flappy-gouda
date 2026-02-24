@@ -112,7 +112,10 @@ export class SupabaseLeaderboardService implements LeaderboardService {
           // Re-fetch full leaderboard on any change
           this.getLeaderboard(difficulty)
             .then(onUpdate)
-            .catch(() => {});
+            .catch((err: unknown) => {
+              // biome-ignore lint/suspicious/noConsole: operational warning for realtime refetch failure
+              console.warn('[leaderboard] realtime refetch failed:', err);
+            });
         },
       )
       .subscribe();
