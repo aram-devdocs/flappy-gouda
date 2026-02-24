@@ -1,10 +1,13 @@
-import { FlappyNatureGame } from '@repo/flappy-nature-game';
 import { DemoPage } from './components/DemoPage.js';
+import { GameWithLeaderboard } from './components/GameWithLeaderboard.js';
+import { LeaderboardProvider } from './components/LeaderboardProvider.js';
 
 export function App() {
   return (
     <DemoPage>
-      <FlappyNatureGame showFps />
+      <LeaderboardProvider>
+        <GameWithLeaderboard />
+      </LeaderboardProvider>
     </DemoPage>
   );
 }
