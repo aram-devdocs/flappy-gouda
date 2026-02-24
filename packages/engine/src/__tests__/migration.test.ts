@@ -8,10 +8,6 @@ import {
   parseBridgeScores,
 } from '../migration';
 
-// ---------------------------------------------------------------------------
-// mergeBestScores
-// ---------------------------------------------------------------------------
-
 describe('mergeBestScores', () => {
   it('takes the maximum of each difficulty', () => {
     const old: BestScores = { easy: 5, normal: 10, hard: 0 };
@@ -38,10 +34,6 @@ describe('mergeBestScores', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// hasScoreImprovements
-// ---------------------------------------------------------------------------
-
 describe('hasScoreImprovements', () => {
   it('returns true when old has a higher score in at least one difficulty', () => {
     const old: BestScores = { easy: 5, normal: 0, hard: 0 };
@@ -67,10 +59,6 @@ describe('hasScoreImprovements', () => {
     expect(hasScoreImprovements(old, cur)).toBe(true);
   });
 });
-
-// ---------------------------------------------------------------------------
-// buildScoreComparisons
-// ---------------------------------------------------------------------------
 
 describe('buildScoreComparisons', () => {
   it('returns one entry per difficulty with correct labels', () => {
@@ -116,10 +104,6 @@ describe('buildScoreComparisons', () => {
     expect(result.every((r) => !r.isImprovement)).toBe(true);
   });
 });
-
-// ---------------------------------------------------------------------------
-// parseBridgeScores
-// ---------------------------------------------------------------------------
 
 describe('parseBridgeScores', () => {
   it('parses a valid response', () => {
@@ -194,10 +178,6 @@ describe('parseBridgeScores', () => {
     expect(parseBridgeScores(data)).toEqual({ easy: 0, normal: 7, hard: 0 });
   });
 });
-
-// ---------------------------------------------------------------------------
-// areAllScoresZero
-// ---------------------------------------------------------------------------
 
 describe('areAllScoresZero', () => {
   it('returns true when all scores are zero', () => {

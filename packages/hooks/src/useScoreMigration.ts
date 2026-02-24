@@ -95,6 +95,7 @@ export function useScoreMigration(currentScores: BestScores): UseScoreMigrationR
     window.addEventListener('message', onMessage);
 
     iframe.addEventListener('load', () => {
+      // '*' is safe here: the request payload is non-sensitive and the iframe src is a hardcoded origin we control
       iframe.contentWindow?.postMessage({ type: 'sn-migration-request', version: 1 }, '*');
     });
 
