@@ -12,6 +12,8 @@ import {
 } from '@repo/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { GameErrorBoundary } from './GameErrorBoundary.js';
+import { LeaderboardOverlay } from './LeaderboardOverlay.js';
+import { useLeaderboardState } from './useLeaderboardState.js';
 
 /** Top-level game component that wires engine, hooks, and UI together. */
 export function FlappyNatureGame({
@@ -24,6 +26,9 @@ export function FlappyNatureGame({
   onBestScoreChange,
   className,
   showFps = false,
+  leaderboard,
+  leaderboardCallbacks,
+  nickname,
 }: FlappyNatureGameProps) {
   const {
     canvasRef,
@@ -47,6 +52,7 @@ export function FlappyNatureGame({
 
   const migration = useScoreMigration(bestScores);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const lb = useLeaderboardState(state, score, difficulty, nickname, leaderboardCallbacks);
 
   useEffect(() => {
     onStateChange?.(state);
@@ -59,16 +65,20 @@ export function FlappyNatureGame({
   }, [bestScores, onBestScoreChange]);
 
   const handleFlap = useCallback(() => {
-    if (pickerOpen) return;
+    if (pickerOpen || lb.leaderboardOpen) return;
     flap();
-  }, [flap, pickerOpen]);
+  }, [flap, pickerOpen, lb.leaderboardOpen]);
 
   const handleEscape = useCallback(() => {
+    if (lb.leaderboardOpen) {
+      lb.closeLeaderboard();
+      return;
+    }
     if (pickerOpen) {
       setPickerOpen(false);
       resume();
     }
-  }, [pickerOpen, resume]);
+  }, [pickerOpen, resume, lb]);
 
   const togglePicker = useCallback(() => {
     if (pickerOpen) {
@@ -127,7 +137,9 @@ export function FlappyNatureGame({
   }, [flap]);
 
   const currentBest = bestScores[difficulty] ?? 0;
-  const isOverlayVisible = state !== 'play' || pickerOpen || migration.showModal;
+  const isOverlayVisible =
+    state !== 'play' || pickerOpen || migration.showModal || lb.leaderboardOpen;
+  const hasLeaderboard = !!leaderboard;
 
   return (
     <GameErrorBoundary>
@@ -161,6 +173,9 @@ export function FlappyNatureGame({
           onSelect={handleDifficultySelect}
           onClose={handlePickerClose}
         />
+        {hasLeaderboard && (
+          <LeaderboardOverlay leaderboard={leaderboard} lb={lb} difficulty={difficulty} />
+        )}
       </GameLayout>
     </GameErrorBoundary>
   );

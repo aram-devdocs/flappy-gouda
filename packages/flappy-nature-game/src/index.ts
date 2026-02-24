@@ -28,4 +28,16 @@ export type {
   DifficultyKey,
   BestScores,
   GameColors,
+  LeaderboardData,
+  LeaderboardCallbacks,
+  LeaderboardEntry,
+  LeaderboardConnectionStatus,
+  LeaderboardProps,
+  NicknameCheckResult,
 } from '@repo/types';
+
+export { NICKNAME_LENGTH, NICKNAME_PATTERN } from '@repo/types';
+
+// Re-export hooks needed by web app to maintain architecture compliance
+export { useNickname } from '@repo/hooks';
+export type { UseNicknameReturn } from '@repo/hooks';
