@@ -7,3 +7,12 @@ export type { EngineErrorCode } from './errors.js';
 export { createLogger } from './logger.js';
 export type { LogLevel, LogEntry } from './logger.js';
 export { sanitizeFontFamily, sanitizeBannerTexts, sanitizeColors } from './sanitize.js';
+export {
+  MIGRATION_FLAG_KEY,
+  BRIDGE_URL,
+  mergeBestScores,
+  hasScoreImprovements,
+  buildScoreComparisons,
+  parseBridgeScores,
+  areAllScoresZero,
+} from './migration.js';

@@ -15,6 +15,8 @@ export { DifficultyPicker } from './molecules/DifficultyPicker.js';
 // Organisms
 export { TitleScreen } from './organisms/TitleScreen.js';
 export { GameOverScreen } from './organisms/GameOverScreen.js';
+export { ScoreMigrationModal } from './organisms/ScoreMigrationModal.js';
+export type { ScoreMigrationModalProps } from './organisms/ScoreMigrationModal.js';
 export { GameContainer } from './organisms/GameContainer.js';
 export { ErrorFallback } from './organisms/ErrorFallback.js';
 export { GameHeader } from './organisms/GameHeader.js';

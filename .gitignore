@@ -33,3 +33,4 @@ storybook-static
 
 # Playwright MCP
 .playwright-mcp
+*.png

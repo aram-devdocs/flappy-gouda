@@ -1,4 +1,4 @@
-import { useGameEngine, useGameInput } from '@repo/hooks';
+import { useGameEngine, useGameInput, useScoreMigration } from '@repo/hooks';
 import type { FlappyNatureGameProps } from '@repo/types';
 import {
   DifficultyPicker,
@@ -8,6 +8,7 @@ import {
   GameHeader,
   GameLayout,
   GameOverScreen,
+  ScoreMigrationModal,
   TitleScreen,
 } from '@repo/ui';
 import { useCallback, useEffect, useState } from 'react';
@@ -45,6 +46,7 @@ export function FlappyNatureGame({
     difficulty: initialDifficulty,
   });
 
+  const migration = useScoreMigration(bestScores);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
@@ -147,6 +149,12 @@ export function FlappyNatureGame({
         <FpsCounter fps={fps} visible={showFps} />
         <TitleScreen visible={state === 'idle'} bestScore={currentBest} onPlay={handlePlay} />
         <GameOverScreen visible={state === 'dead'} score={score} bestScore={currentBest} />
+        <ScoreMigrationModal
+          visible={migration.showModal}
+          comparisons={migration.comparisons}
+          onAccept={migration.accept}
+          onDecline={migration.decline}
+        />
         <DifficultyPicker
           currentDifficulty={difficulty}
           bestScores={bestScores}

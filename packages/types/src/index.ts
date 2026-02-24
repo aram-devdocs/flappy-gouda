@@ -30,4 +30,6 @@ export type { EngineEvents, EngineEventName, EngineConfig } from './engine';
 
 export type { FlappyNatureGameProps } from './props';
 
+export type { ScoreComparison } from './migration';
+
 export { DESIGN_TOKENS, DEFAULT_GAME_COLORS } from './tokens';

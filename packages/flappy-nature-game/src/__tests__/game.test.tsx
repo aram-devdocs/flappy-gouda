@@ -24,6 +24,12 @@ vi.mock('@repo/hooks', () => ({
     resume: mockResume,
   })),
   useGameInput: vi.fn(),
+  useScoreMigration: vi.fn(() => ({
+    showModal: false,
+    comparisons: [],
+    accept: vi.fn(),
+    decline: vi.fn(),
+  })),
 }));
 
 beforeEach(() => {
