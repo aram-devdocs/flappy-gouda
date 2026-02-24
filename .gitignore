@@ -30,3 +30,7 @@ yarn-error.log*
 
 # Storybook
 storybook-static
+
+
+# Playwright MCP
+.playwright-mcp
