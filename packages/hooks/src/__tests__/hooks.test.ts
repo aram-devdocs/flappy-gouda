@@ -16,6 +16,9 @@ vi.mock('@repo/engine', () => {
     reset: vi.fn(),
     pause: vi.fn(),
     resume: vi.fn(),
+    handleClick: vi.fn(() => false),
+    getDifficulty: vi.fn(() => 'normal'),
+    getBestScores: vi.fn(() => ({ easy: 0, normal: 0, hard: 0 })),
   };
   return {
     FlappyEngine: vi.fn(() => mockEngine),
@@ -291,6 +294,8 @@ describe('useGameEngine', () => {
     expect(result.current).toHaveProperty('reset');
     expect(result.current).toHaveProperty('pause');
     expect(result.current).toHaveProperty('resume');
+    expect(result.current).toHaveProperty('handleCanvasClick');
+    expect(result.current).toHaveProperty('handleCanvasHover');
   });
 
   it('returns initial state values', () => {

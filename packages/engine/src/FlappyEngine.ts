@@ -27,6 +27,7 @@ import {
   updateClouds,
   updatePipes,
 } from './physics.js';
+import { hitTestSettingsIcon } from './renderer-entities.js';
 import type { Renderer } from './renderer.js';
 
 export class FlappyEngine {
@@ -42,6 +43,7 @@ export class FlappyEngine {
   private clouds: Cloud[] = [];
   private pipePool: Pipe[] = [];
   private pipeActiveCount = 0;
+  private settingsIconHovered = false;
   private events = new EngineEventEmitter();
   private state = new EngineState(this.events);
   private loop = new EngineLoop(this.events);
@@ -84,7 +86,6 @@ export class FlappyEngine {
       (now) => this.draw(now),
     );
   }
-
   stop(): void {
     this.loop.stop();
   }
@@ -92,7 +93,6 @@ export class FlappyEngine {
     this.loop.stop();
     this.events.clearAll();
   }
-
   flap(): void {
     if (this.state.state === 'paused') return;
     if (this.state.state === 'idle') {
@@ -110,24 +110,23 @@ export class FlappyEngine {
       }
     }
   }
-
   setDifficulty(key: DifficultyKey): void {
     this.state.setDifficulty(key, this.config);
+    const prevHeartImg = this.renderer.heartImg;
     this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
     this.renderer.buildGradients();
+    this.renderer.heartImg = prevHeartImg;
     this.bg = createBgSystem(this.config, this.bannerTexts);
     this.bg.init();
     this.renderer.prerenderAllClouds(this.clouds, this.bg);
     this.doReset();
   }
-
   reset(): void {
     this.doReset();
   }
   pause(): void {
     this.state.pause();
   }
-
   resume(): void {
     this.state.resume();
     if (this.state.state === 'play') this.loop.resetAfterPause();
@@ -149,6 +148,12 @@ export class FlappyEngine {
   }
   off<K extends EngineEventName>(event: K, cb: EngineEvents[K]): void {
     this.events.off(event, cb);
+  }
+  handleClick(cssX: number, cssY: number): boolean {
+    const logicalX = (cssX * (this.canvas.width / this.canvas.clientWidth)) / this.dpr;
+    const logicalY = (cssY * (this.canvas.height / this.canvas.clientHeight)) / this.dpr;
+    this.settingsIconHovered = hitTestSettingsIcon(logicalX, logicalY, this.config.width);
+    return this.settingsIconHovered;
   }
   private doReset(): void {
     resetEngine(this.state, this.loop, this.bird, this.prevBird, this.config, (n) => {
@@ -175,7 +180,6 @@ export class FlappyEngine {
     if (r.scoreInc > 0) this.state.setScore(this.state.score + r.scoreInc);
     if (r.died) this.state.die();
   }
-
   private draw(now: number): void {
     this.renderer.drawSky();
     this.renderer.drawBackground(this.bg, this.loop.globalTime);
@@ -188,6 +192,7 @@ export class FlappyEngine {
       const rot = this.prevBird.rot + (this.bird.rot - this.prevBird.rot) * a;
       this.renderer.drawBird(y, rot);
       this.renderer.drawScore(this.state.score);
+      this.renderer.drawSettingsIcon(this.settingsIconHovered);
     }
     this.loop.updateFps(now);
   }

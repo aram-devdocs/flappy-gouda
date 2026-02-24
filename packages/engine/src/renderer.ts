@@ -10,7 +10,7 @@ import {
   drawSkylineSegment,
   drawTree,
 } from './renderer-background.js';
-import { drawBird, drawPipes, drawScore } from './renderer-entities.js';
+import { drawBird, drawPipes, drawScore, drawSettingsIcon } from './renderer-entities.js';
 import {
   buildGradients,
   buildPipeLipCache,
@@ -186,5 +186,9 @@ export class Renderer {
 
   drawScore(score: number): void {
     drawScore(this.ctx, score, this.deps.width, this.fonts, this.colors);
+  }
+
+  drawSettingsIcon(hovered: boolean): void {
+    drawSettingsIcon(this.ctx, this.deps.width, this.colors, hovered);
   }
 }

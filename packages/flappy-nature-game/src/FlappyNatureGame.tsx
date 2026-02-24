@@ -35,6 +35,8 @@ export function FlappyNatureGame({
     setDifficulty,
     pause,
     resume,
+    handleCanvasClick,
+    handleCanvasHover,
   } = useGameEngine({
     colors,
     bannerTexts,
@@ -66,14 +68,7 @@ export function FlappyNatureGame({
     }
   }, [pickerOpen, resume]);
 
-  useGameInput({
-    onFlap: handleFlap,
-    onEscape: handleEscape,
-    canvasRef,
-    enabled: !pickerOpen,
-  });
-
-  const handleDifficultyBadgeClick = useCallback(() => {
+  const togglePicker = useCallback(() => {
     if (pickerOpen) {
       setPickerOpen(false);
       resume();
@@ -82,6 +77,35 @@ export function FlappyNatureGame({
       setPickerOpen(true);
     }
   }, [pickerOpen, pause, resume]);
+
+  const onCanvasInteract = useCallback(
+    (x: number, y: number): boolean => {
+      if (handleCanvasClick(x, y)) {
+        togglePicker();
+        return true;
+      }
+      return false;
+    },
+    [handleCanvasClick, togglePicker],
+  );
+
+  const onCanvasHover = useCallback(
+    (x: number, y: number) => {
+      const hit = handleCanvasHover(x, y);
+      const canvas = canvasRef.current;
+      if (canvas) canvas.style.cursor = hit ? 'pointer' : '';
+    },
+    [handleCanvasHover, canvasRef],
+  );
+
+  useGameInput({
+    onFlap: handleFlap,
+    onEscape: handleEscape,
+    onCanvasInteract,
+    onCanvasHover,
+    canvasRef,
+    enabled: !pickerOpen,
+  });
 
   const handleDifficultySelect = useCallback(
     (key: typeof difficulty) => {
@@ -125,7 +149,7 @@ export function FlappyNatureGame({
           <DifficultyBadge
             difficulty={difficulty}
             visible={state !== 'idle'}
-            onClick={handleDifficultyBadgeClick}
+            onClick={togglePicker}
           />
           <span
             style={{

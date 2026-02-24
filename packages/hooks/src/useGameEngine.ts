@@ -26,6 +26,10 @@ export interface UseGameEngineReturn {
   pause: () => void;
   /** Resume gameplay after a pause. */
   resume: () => void;
+  /** Hit-test a canvas click in CSS coordinates. Returns true if the gear icon was hit. */
+  handleCanvasClick: (cssX: number, cssY: number) => boolean;
+  /** Hit-test a mouse move in CSS coordinates. Returns true if hovering the gear icon. */
+  handleCanvasHover: (cssX: number, cssY: number) => boolean;
 }
 
 /**
@@ -57,6 +61,10 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
     engine.on('fpsUpdate', setFps);
     engine.on('difficultyChange', setDifficultyState);
 
+    // Sync initial state loaded from persistence (engine may have loaded from localStorage)
+    setDifficultyState(engine.getDifficulty());
+    setBestScores(engine.getBestScores());
+
     engine.start();
 
     return () => {
@@ -85,6 +93,14 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
     engineRef.current?.resume();
   }, []);
 
+  const handleCanvasClick = useCallback((cssX: number, cssY: number): boolean => {
+    return engineRef.current?.handleClick(cssX, cssY) ?? false;
+  }, []);
+
+  const handleCanvasHover = useCallback((cssX: number, cssY: number): boolean => {
+    return engineRef.current?.handleClick(cssX, cssY) ?? false;
+  }, []);
+
   return {
     canvasRef,
     state,
@@ -97,5 +113,7 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
     reset,
     pause,
     resume,
+    handleCanvasClick,
+    handleCanvasHover,
   };
 }

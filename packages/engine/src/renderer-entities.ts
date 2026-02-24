@@ -3,6 +3,13 @@ import type { CachedFonts } from './cache.js';
 import { DEG_TO_RAD, TAU } from './math.js';
 import type { PipeLipCache } from './renderer-prerender.js';
 
+export interface IconBounds {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export function drawBird(
   ctx: CanvasRenderingContext2D,
   y: number,
@@ -82,4 +89,50 @@ export function drawScore(
   ctx.globalAlpha = 1;
   ctx.fillStyle = colors.magenta;
   ctx.fillText(String(score), width / 2, 50);
+}
+
+const ICON_SIZE = 22;
+const ICON_PAD = 10;
+
+export function getSettingsIconBounds(width: number): IconBounds {
+  return { x: width - ICON_SIZE - ICON_PAD, y: ICON_PAD, w: ICON_SIZE, h: ICON_SIZE };
+}
+
+export function drawSettingsIcon(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  colors: GameColors,
+  hovered = false,
+): void {
+  const b = getSettingsIconBounds(width);
+  const cx = b.x + b.w / 2;
+  const cy = b.y + b.h / 2;
+  const outer = b.w / 2;
+  const inner = outer * 0.62;
+  const hole = outer * 0.3;
+  const teeth = 8;
+
+  ctx.save();
+  ctx.globalAlpha = hovered ? 0.7 : 0.35;
+  ctx.fillStyle = colors.navy;
+  ctx.beginPath();
+  for (let i = 0; i < teeth; i++) {
+    const a0 = (TAU / teeth) * i - TAU / (teeth * 4);
+    const a1 = a0 + TAU / (teeth * 4);
+    const a2 = a1 + TAU / (teeth * 4);
+    ctx.lineTo(cx + Math.cos(a0) * outer, cy + Math.sin(a0) * outer);
+    ctx.lineTo(cx + Math.cos(a1) * outer, cy + Math.sin(a1) * outer);
+    ctx.lineTo(cx + Math.cos(a1) * inner, cy + Math.sin(a1) * inner);
+    ctx.lineTo(cx + Math.cos(a2) * inner, cy + Math.sin(a2) * inner);
+  }
+  ctx.closePath();
+  ctx.moveTo(cx + hole, cy);
+  ctx.arc(cx, cy, hole, 0, TAU, true);
+  ctx.fill('evenodd');
+  ctx.restore();
+}
+
+export function hitTestSettingsIcon(logicalX: number, logicalY: number, width: number): boolean {
+  const b = getSettingsIconBounds(width);
+  return logicalX >= b.x && logicalX <= b.x + b.w && logicalY >= b.y && logicalY <= b.y + b.h;
 }
