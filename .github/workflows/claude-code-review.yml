@@ -2,43 +2,474 @@ name: Claude Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+    types: [opened]
+
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review"
+        required: true
+        type: number
+
+  issue_comment:
+    types: [created]
 
 jobs:
-  claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
+  pre-check:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: read
       issues: read
+    outputs:
+      should_review: ${{ steps.check-review.outputs.should_review }}
+      pr_number: ${{ steps.get-pr-info.outputs.pr_number }}
+      custom_instructions: ${{ steps.get-pr-info.outputs.custom_instructions }}
+      skip_reason: ${{ steps.check-review.outputs.skip_reason }}
+
+    steps:
+      - name: Get PR info
+        id: get-pr-info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            CUSTOM_INSTRUCTIONS=""
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PR_NUMBER="${{ inputs.pr_number }}"
+            CUSTOM_INSTRUCTIONS=""
+          else
+            PR_NUMBER="${{ github.event.issue.number }}"
+            COMMENT_BODY='${{ github.event.comment.body }}'
+            CUSTOM_INSTRUCTIONS=$(echo "$COMMENT_BODY" | sed -n 's/.*@claude-review[[:space:]]*\(.*\)/\1/p' | xargs)
+          fi
+
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          {
+            echo 'custom_instructions<<EOF'
+            echo "$CUSTOM_INSTRUCTIONS"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Check if review should run
+        id: check-review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ steps.get-pr-info.outputs.pr_number }}"
+          SHOULD_REVIEW="true"
+          SKIP_REASON=""
+
+          # Skip if this is an issue_comment and does not contain @claude-review
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            COMMENT_BODY='${{ github.event.comment.body }}'
+            if ! echo "$COMMENT_BODY" | grep -q "@claude-review"; then
+              SHOULD_REVIEW="false"
+              SKIP_REASON="Comment does not contain @claude-review trigger"
+            fi
+            # Also skip if the issue is not a PR
+            if [ -z "${{ github.event.issue.pull_request.url }}" ]; then
+              SHOULD_REVIEW="false"
+              SKIP_REASON="Comment is not on a pull request"
+            fi
+          fi
+
+          # Skip if PR is a draft
+          if [ "${{ github.event.pull_request.draft }}" = "true" ]; then
+            SHOULD_REVIEW="false"
+            SKIP_REASON="PR is in draft state"
+          fi
+
+          # Skip if author is a bot
+          PR_AUTHOR="${{ github.event.pull_request.user.login || github.event.issue.user.login }}"
+          case "$PR_AUTHOR" in
+            "dependabot[bot]"|"renovate[bot]"|"github-actions[bot]")
+              SHOULD_REVIEW="false"
+              SKIP_REASON="PR author is a bot ($PR_AUTHOR)"
+              ;;
+          esac
+
+          # Check PR size (only if we still plan to review)
+          if [ "$SHOULD_REVIEW" = "true" ] && [ -n "$PR_NUMBER" ]; then
+            DIFF_STAT=$(gh pr diff "$PR_NUMBER" --stat 2>/dev/null || echo "")
+            if [ -n "$DIFF_STAT" ]; then
+              FILES_CHANGED=$(echo "$DIFF_STAT" | grep -oP '^\s*\K\d+(?= file)' | head -1 || echo "0")
+              LINES_CHANGED=$(echo "$DIFF_STAT" | grep -oP '\d+(?= insertion)' | head -1 || echo "0")
+              LINES_DELETED=$(echo "$DIFF_STAT" | grep -oP '\d+(?= deletion)' | head -1 || echo "0")
+              TOTAL_LINES=$(( ${LINES_CHANGED:-0} + ${LINES_DELETED:-0} ))
+
+              if [ "${FILES_CHANGED:-0}" -gt 50 ]; then
+                SHOULD_REVIEW="false"
+                SKIP_REASON="PR too large: ${FILES_CHANGED} files changed (limit: 50)"
+              elif [ "${TOTAL_LINES:-0}" -gt 5000 ]; then
+                SHOULD_REVIEW="false"
+                SKIP_REASON="PR too large: ${TOTAL_LINES} lines changed (limit: 5000)"
+              fi
+            fi
+          fi
+
+          echo "should_review=$SHOULD_REVIEW" >> $GITHUB_OUTPUT
+          echo "skip_reason=$SKIP_REASON" >> $GITHUB_OUTPUT
+
+      - name: Step summary
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ steps.get-pr-info.outputs.pr_number }}"
+          SHOULD_REVIEW="${{ steps.check-review.outputs.should_review }}"
+          SKIP_REASON="${{ steps.check-review.outputs.skip_reason }}"
+
+          PR_AUTHOR=""
+          if [ -n "$PR_NUMBER" ]; then
+            PR_AUTHOR=$(gh pr view "$PR_NUMBER" --json author --jq '.author.login' 2>/dev/null || echo "unknown")
+          fi
+
+          {
+            echo "## Pre-Check Results"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| PR Number | ${PR_NUMBER:-N/A} |"
+            echo "| Author | ${PR_AUTHOR:-N/A} |"
+            echo "| Should Review | $SHOULD_REVIEW |"
+            if [ -n "$SKIP_REASON" ]; then
+              echo "| Skip Reason | $SKIP_REASON |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  claude-review:
+    needs: pre-check
+    if: needs.pre-check.outputs.should_review == 'true'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
       id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - name: Gather context
+        id: gather-context
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ needs.pre-check.outputs.pr_number }}"
+
+          CHANGED_FILES=$(gh pr diff "$PR_NUMBER" --name-only 2>/dev/null || echo "")
+
+          has_engine_changes="false"
+          has_ui_changes="false"
+          has_hooks_changes="false"
+          has_game_changes="false"
+          has_types_changes="false"
+          has_config_changes="false"
+
+          if echo "$CHANGED_FILES" | grep -q "packages/engine/"; then
+            has_engine_changes="true"
+          fi
+
+          if echo "$CHANGED_FILES" | grep -qE "packages/ui/|\.tsx$"; then
+            has_ui_changes="true"
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q "packages/hooks/"; then
+            has_hooks_changes="true"
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q "packages/flappy-nature-game/"; then
+            has_game_changes="true"
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q "packages/types/"; then
+            has_types_changes="true"
+          fi
+
+          if echo "$CHANGED_FILES" | grep -qE "biome\.json|tsconfig|vitest\.config|\.env"; then
+            has_config_changes="true"
+          fi
+
+          echo "has_engine_changes=$has_engine_changes" >> $GITHUB_OUTPUT
+          echo "has_ui_changes=$has_ui_changes" >> $GITHUB_OUTPUT
+          echo "has_hooks_changes=$has_hooks_changes" >> $GITHUB_OUTPUT
+          echo "has_game_changes=$has_game_changes" >> $GITHUB_OUTPUT
+          echo "has_types_changes=$has_types_changes" >> $GITHUB_OUTPUT
+          echo "has_config_changes=$has_config_changes" >> $GITHUB_OUTPUT
+
+      - name: Build review prompt
+        id: build-prompt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ needs.pre-check.outputs.pr_number }}"
+          CUSTOM_INSTRUCTIONS="${{ needs.pre-check.outputs.custom_instructions }}"
+
+          HAS_ENGINE="${{ steps.gather-context.outputs.has_engine_changes }}"
+          HAS_UI="${{ steps.gather-context.outputs.has_ui_changes }}"
+          HAS_HOOKS="${{ steps.gather-context.outputs.has_hooks_changes }}"
+          HAS_GAME="${{ steps.gather-context.outputs.has_game_changes }}"
+          HAS_TYPES="${{ steps.gather-context.outputs.has_types_changes }}"
+
+          BASE_PROMPT="REPO: ${{ github.repository }}
+          PR NUMBER: $PR_NUMBER
+
+          You are performing a structured code review for the Flappy Nature monorepo. Follow these 7 phases in order.
+
+          ## Phase 1: Context Gathering
+
+          1. Read the repository's CLAUDE.md for coding standards and conventions
+          2. Read .claude/rules/ for package-specific constraints
+          3. Run: gh pr view $PR_NUMBER --json title,body,labels,baseRefName,headRefName
+          4. Run: gh pr diff $PR_NUMBER
+          5. Identify all files changed and categorize by package/layer
+
+          ## Phase 2: Architecture Validation
+
+          Check all changed files against the package dependency DAG:
+          - @repo/types: imports nothing (zero deps)
+          - @repo/config: imports nothing (zero deps)
+          - @repo/engine: imports @repo/types only. MUST NOT import react or react-dom.
+          - @repo/ui: imports @repo/types only. MUST be stateless (no hooks).
+          - @repo/hooks: imports @repo/engine and @repo/types only.
+          - @repo/flappy-nature-game: imports @repo/engine, @repo/hooks, @repo/ui, @repo/types.
+          - @repo/web: imports @repo/flappy-nature-game only.
+
+          Flag as BLOCKER:
+          - Any import that violates the dependency DAG above
+          - React or react-dom imports in @repo/engine or @repo/types
+          - useState/useEffect/any hook call in @repo/ui components
+          - Business logic (physics, scoring, collision) outside @repo/engine
+          - @repo/web importing anything other than @repo/flappy-nature-game
+
+          ## Phase 3: Anti-Pattern Scan
+
+          Scan all changed files for these patterns:
+
+          BLOCKERS (must fix before merge):
+          - \`any\` type usage (use proper types or generics)
+          - React hooks in @repo/ui (components must be stateless)
+          - React imports in @repo/engine (must be pure TypeScript)
+          - Business logic in UI or hooks (belongs in engine)
+          - Source files over 200 lines
+          - Dead code or commented-out code
+          - @ts-ignore or @ts-expect-error directives
+          - div with onClick instead of semantic HTML (button, a, etc.)
+          - Missing cleanup in useEffect subscriptions (in hooks)
+
+          WARNINGS (should fix, non-blocking):
+          - Missing return types on exported functions
+          - Type-only imports without \`type\` keyword
+          - TODO comments without ticket/issue reference
+          - Missing error handling for async operations
+          - Overly complex functions (>50 lines or >4 nesting levels)
+
+          ## Phase 4: Code Quality Assessment
+
+          Evaluate against these principles:
+          - CLEAN: Is the code readable and well-organized?
+          - DRY: Is there unnecessary duplication?
+          - KISS: Are solutions appropriately simple?
+          - Single Source of Truth: Are types centralized in @repo/types?
+          - Testability: Is the code testable? Are tests included?
+          - Type Safety: Strict TypeScript, no \`any\` types?
+
+          ## Phase 5: AI Writing Detection
+
+          If the PR includes documentation, comments, or user-facing text, check for:
+          - Promotional or marketing language in technical docs
+          - Em dash overuse
+          - AI vocabulary (\"delve\", \"tapestry\", \"landscape\", \"leverage\", \"robust\")
+          - \"In conclusion\" or \"It's important to note\" phrases
+          - Overly formal or stilted language in comments
+
+          Flag as WARNING if detected.
+
+          ## Phase 6: Scope Verification
+
+          Compare the PR description and linked issues against the actual changes:
+          - Are all described changes implemented?
+          - Are there undescribed changes (scope creep)?
+          - Do the changes match the PR type (bug fix, feature, etc.)?
+
+          ## Phase 7: Structured Output
+
+          Format your review as a PR comment using this structure:
+
+          ### Code Review Summary
+
+          **PR:** #NUMBER - TITLE
+          **Author:** @AUTHOR
+          **Base:** BASE_BRANCH <- HEAD_BRANCH
+
+          ---
+
+          #### Blockers
+
+          | # | Severity | File | Line | Issue | Suggestion |
+          |---|----------|------|------|-------|------------|
+          (table of BLOCKER issues, or \"None found\" if clean)
+
+          #### Warnings
+
+          | # | Severity | File | Line | Issue | Suggestion |
+          |---|----------|------|------|-------|------------|
+          (table of WARNING issues, or \"None found\" if clean)
+
+          #### Architecture Compliance
+
+          - [ ] Package imports follow dependency DAG
+          - [ ] No React imports in engine or types
+          - [ ] No hooks in UI components
+          - [ ] Business logic only in engine
+          - [ ] Types defined in @repo/types
+          - [ ] All source files under 200 lines
+
+          #### Anti-Pattern Scan
+
+          | Pattern | Status | Details |
+          |---------|--------|---------|
+          (table of checked patterns with Pass/Fail/N/A)
+
+          #### Quality Assessment
+
+          Brief paragraph on overall code quality, readability, and maintainability.
+
+          #### Scope Check
+
+          - Changes match PR description: Yes/No
+          - Scope creep detected: Yes/No (details if yes)
+
+          ---
+
+          **Verdict:** APPROVED / CHANGES REQUESTED / NEEDS DISCUSSION
+
+          (End with constructive summary)"
+
+          CONDITIONAL_CONTEXT=""
+
+          if [ "$HAS_ENGINE" = "true" ]; then
+            CONDITIONAL_CONTEXT="$CONDITIONAL_CONTEXT
+
+          ENGINE CHANGE CONTEXT:
+          - Read .claude/rules/engine.md for engine constraints
+          - Verify NO react or react-dom imports
+          - Verify NO @repo/* imports except @repo/types
+          - Verify all files use .ts extension (not .tsx)
+          - Verify all source files are under 200 lines"
+          fi
+
+          if [ "$HAS_UI" = "true" ]; then
+            CONDITIONAL_CONTEXT="$CONDITIONAL_CONTEXT
+
+          UI CHANGE CONTEXT:
+          - Read .claude/rules/ui.md for stateless component rules
+          - Verify NO useState, useEffect, or any hook calls
+          - Verify NO imports from @repo/hooks or @repo/engine
+          - Verify semantic HTML usage (no div with onClick)
+          - Verify WCAG AA accessibility (ARIA labels, keyboard navigation)"
+          fi
+
+          if [ "$HAS_HOOKS" = "true" ]; then
+            CONDITIONAL_CONTEXT="$CONDITIONAL_CONTEXT
+
+          HOOKS CHANGE CONTEXT:
+          - Read .claude/rules/hooks.md for hook constraints
+          - Verify NO imports from @repo/ui or @repo/flappy-nature-game
+          - Verify all useEffect subscriptions have cleanup functions
+          - Verify NO business logic (physics, scoring, collision)"
+          fi
+
+          if [ "$HAS_GAME" = "true" ]; then
+            CONDITIONAL_CONTEXT="$CONDITIONAL_CONTEXT
+
+          GAME CHANGE CONTEXT:
+          - Read .claude/rules/game.md for orchestration rules
+          - Verify NO business logic (belongs in @repo/engine)
+          - Verify error boundary wraps the game component
+          - Verify callbacks are properly wired between layers"
+          fi
+
+          if [ "$HAS_TYPES" = "true" ]; then
+            CONDITIONAL_CONTEXT="$CONDITIONAL_CONTEXT
+
+          TYPES CHANGE CONTEXT:
+          - Verify NO runtime dependencies (types-only package)
+          - Verify NO imports from any @repo/* package
+          - Verify types are exported from barrel index.ts"
+          fi
+
+          if [ -n "$CUSTOM_INSTRUCTIONS" ]; then
+            CONDITIONAL_CONTEXT="$CONDITIONAL_CONTEXT
+
+          ADDITIONAL INSTRUCTIONS FROM REVIEWER:
+          $CUSTOM_INSTRUCTIONS"
+          fi
+
+          FULL_PROMPT="$BASE_PROMPT$CONDITIONAL_CONTEXT
+
+          Post your review using: gh pr comment $PR_NUMBER --body \"YOUR_REVIEW\"
+
+          If the review is too long for a single comment, split into multiple comments."
+
+          {
+            echo 'prompt<<EOF'
+            echo "$FULL_PROMPT"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
 
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+          prompt: ${{ steps.build-prompt.outputs.prompt }}
+          claude_args: '--model claude-opus-4-5-20251101 --allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Read,Glob,Grep"'
 
+      - name: Step summary
+        run: |
+          PR_NUMBER="${{ needs.pre-check.outputs.pr_number }}"
+          {
+            echo "## Claude Code Review Complete"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| PR Number | $PR_NUMBER |"
+            echo "| Repository | ${{ github.repository }} |"
+            echo "| Triggered By | ${{ github.event_name }} |"
+            echo "| Engine Changes | ${{ steps.gather-context.outputs.has_engine_changes }} |"
+            echo "| UI Changes | ${{ steps.gather-context.outputs.has_ui_changes }} |"
+            echo "| Hooks Changes | ${{ steps.gather-context.outputs.has_hooks_changes }} |"
+            echo "| Game Changes | ${{ steps.gather-context.outputs.has_game_changes }} |"
+            echo "| Types Changes | ${{ steps.gather-context.outputs.has_types_changes }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  skip-notification:
+    needs: pre-check
+    if: |
+      needs.pre-check.outputs.should_review == 'false' &&
+      github.event_name != 'issue_comment'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post skip comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ needs.pre-check.outputs.pr_number }}"
+          SKIP_REASON="${{ needs.pre-check.outputs.skip_reason }}"
+
+          # Only notify for size-related skips; drafts and bots are expected and do not need notification
+          if echo "$SKIP_REASON" | grep -q "too large"; then
+            gh pr comment "$PR_NUMBER" --body "Claude Code Review skipped: $SKIP_REASON
+
+          To request a review, comment \`@claude-review\` on this PR."
+          fi
