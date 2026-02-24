@@ -3,8 +3,7 @@ node_modules
 .pnp
 .pnp.js
 
-# Local env files
-.env
+# Local env files (committed .env is public config only)
 .env.local
 .env.development.local
 .env.test.local

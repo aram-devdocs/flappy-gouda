@@ -3,13 +3,17 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { FpsCounter } from '../atoms/FpsCounter';
 import { GameCanvas } from '../atoms/GameCanvas';
+import { GameFooter } from '../atoms/GameFooter';
 import { ScoreDisplay } from '../atoms/ScoreDisplay';
 import { DifficultyBadge } from '../molecules/DifficultyBadge';
 import { DifficultyPicker } from '../molecules/DifficultyPicker';
 import { ErrorFallback } from '../organisms/ErrorFallback';
 import { GameContainer } from '../organisms/GameContainer';
+import { GameHeader } from '../organisms/GameHeader';
 import { GameOverScreen } from '../organisms/GameOverScreen';
 import { TitleScreen } from '../organisms/TitleScreen';
+import { GamePage } from '../pages/GamePage';
+import { GameLayout } from '../templates/GameLayout';
 
 describe('TitleScreen', () => {
   it('renders when visible is true', () => {
@@ -263,5 +267,107 @@ describe('ErrorFallback', () => {
     render(<ErrorFallback message="error" onReset={onReset} />);
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     expect(onReset).toHaveBeenCalledOnce();
+  });
+});
+
+describe('GameFooter', () => {
+  it('renders footer text', () => {
+    render(<GameFooter text="Made with love" />);
+    expect(screen.getByText('Made with love')).toBeDefined();
+  });
+
+  it('renders empty text without crashing', () => {
+    const { container } = render(<GameFooter text="" />);
+    expect(container.firstChild).not.toBeNull();
+  });
+});
+
+describe('GameHeader', () => {
+  const defaultProps = {
+    brandName: 'Flappy Nature',
+    difficulty: 'normal' as const,
+    bestScore: 10,
+    difficultyVisible: true,
+    onDifficultyClick: vi.fn(),
+  };
+
+  it('renders brand name', () => {
+    render(<GameHeader {...defaultProps} />);
+    expect(screen.getByText('Flappy Nature')).toBeDefined();
+  });
+
+  it('renders heart icon', () => {
+    render(<GameHeader {...defaultProps} />);
+    expect(screen.getByRole('img', { name: 'Heart icon' })).toBeDefined();
+  });
+
+  it('renders difficulty badge when visible', () => {
+    render(<GameHeader {...defaultProps} />);
+    expect(screen.getByRole('button', { name: 'Difficulty: Normal' })).toBeDefined();
+  });
+
+  it('hides difficulty badge when difficultyVisible is false', () => {
+    render(<GameHeader {...defaultProps} difficultyVisible={false} />);
+    expect(screen.queryByRole('button', { name: /Difficulty/ })).toBeNull();
+  });
+
+  it('shows best score when greater than 0', () => {
+    render(<GameHeader {...defaultProps} bestScore={42} />);
+    expect(screen.getByText('Best: 42')).toBeDefined();
+  });
+
+  it('hides best score text when bestScore is 0', () => {
+    render(<GameHeader {...defaultProps} bestScore={0} />);
+    expect(screen.queryByText(/Best:/)).toBeNull();
+  });
+
+  it('calls onDifficultyClick when badge is clicked', () => {
+    const onDifficultyClick = vi.fn();
+    render(<GameHeader {...defaultProps} onDifficultyClick={onDifficultyClick} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Difficulty: Normal' }));
+    expect(onDifficultyClick).toHaveBeenCalledOnce();
+  });
+});
+
+describe('GameLayout', () => {
+  it('renders header, children, and footer', () => {
+    render(
+      <GameLayout header={<span>header content</span>} footer={<span>footer content</span>}>
+        <span>game content</span>
+      </GameLayout>,
+    );
+    expect(screen.getByText('header content')).toBeDefined();
+    expect(screen.getByText('game content')).toBeDefined();
+    expect(screen.getByText('footer content')).toBeDefined();
+  });
+
+  it('wraps content in a GameContainer with main role', () => {
+    render(
+      <GameLayout header={<span>h</span>} footer={<span>f</span>}>
+        <span>c</span>
+      </GameLayout>,
+    );
+    expect(screen.getByRole('main')).toBeDefined();
+  });
+});
+
+describe('GamePage', () => {
+  it('renders title as h1', () => {
+    render(
+      <GamePage title="My Game">
+        <span>content</span>
+      </GamePage>,
+    );
+    expect(screen.getByRole('heading', { level: 1 })).toBeDefined();
+    expect(screen.getByText('My Game')).toBeDefined();
+  });
+
+  it('renders children', () => {
+    render(
+      <GamePage title="Test">
+        <span>child content</span>
+      </GamePage>,
+    );
+    expect(screen.getByText('child content')).toBeDefined();
   });
 });

@@ -1,0 +1,56 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build app
+        run: pnpm build
+
+      - name: Build Storybook
+        run: pnpm --filter=@repo/ui build-storybook
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site/storybook
+          cp -r apps/web/dist/* _site/
+          cp -r packages/ui/storybook-static/* _site/storybook/
+          echo "flappy-nature.aramhammoudeh.com" > _site/CNAME
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
