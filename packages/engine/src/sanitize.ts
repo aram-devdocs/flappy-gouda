@@ -1,5 +1,6 @@
-import type { GameColors } from '@repo/types';
-import { DEFAULT_FONT } from './cache.js';
+import type { EngineConfig, GameColors } from '@repo/types';
+import { DEFAULT_BANNERS } from './banners.js';
+import { type CachedFonts, DEFAULT_COLORS, DEFAULT_FONT, buildFontCache } from './cache.js';
 import { createLogger } from './logger.js';
 
 const log = createLogger('sanitize');
@@ -36,4 +37,25 @@ export function sanitizeColors(colors: Partial<GameColors>): Partial<GameColors>
     }
   }
   return result;
+}
+
+interface ResolvedConfig {
+  colors: GameColors;
+  fonts: CachedFonts;
+  bannerTexts: string[];
+}
+
+export function resolveEngineConfig(engineConfig?: EngineConfig): ResolvedConfig {
+  const colors: GameColors = {
+    ...DEFAULT_COLORS,
+    ...(engineConfig?.colors ? sanitizeColors(engineConfig.colors) : {}),
+  };
+  const fontFamily = engineConfig?.fontFamily
+    ? sanitizeFontFamily(engineConfig.fontFamily)
+    : DEFAULT_FONT;
+  const fonts = buildFontCache(fontFamily);
+  const bannerTexts = engineConfig?.bannerTexts
+    ? sanitizeBannerTexts(engineConfig.bannerTexts)
+    : DEFAULT_BANNERS;
+  return { colors, fonts, bannerTexts };
 }

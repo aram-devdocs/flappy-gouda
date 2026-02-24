@@ -1,17 +1,7 @@
-import type {
-  Bird,
-  Cloud,
-  DifficultyKey,
-  EngineConfig,
-  EngineEventName,
-  EngineEvents,
-  GameColors,
-  GameConfig,
-  Pipe,
-} from '@repo/types';
+import type { Bird, Cloud, DifficultyKey, EngineConfig } from '@repo/types';
+import type { EngineEventName, EngineEvents, GameColors, GameConfig, Pipe } from '@repo/types';
 import type { BackgroundSystem } from './background.js';
-import { DEFAULT_BANNERS } from './banners.js';
-import { type CachedFonts, DEFAULT_COLORS, DEFAULT_FONT, buildFontCache } from './cache.js';
+import type { CachedFonts } from './cache.js';
 import { DEFAULT_CONFIG, PIPE_POOL_SIZE, applyDifficulty, validateConfig } from './config.js';
 import { EngineEventEmitter } from './engine-events.js';
 import { resetEngine, syncPrevBird } from './engine-lifecycle.js';
@@ -30,8 +20,7 @@ import {
 } from './physics.js';
 import { hitTestSettingsIcon } from './renderer-entities.js';
 import type { Renderer } from './renderer.js';
-import { sanitizeBannerTexts, sanitizeColors, sanitizeFontFamily } from './sanitize.js';
-
+import { resolveEngineConfig } from './sanitize.js';
 export class FlappyEngine {
   private config: GameConfig;
   private colors: GameColors;
@@ -51,24 +40,16 @@ export class FlappyEngine {
   private loop = new EngineLoop(this.events);
   private bg: BackgroundSystem;
   private renderer: Renderer;
-
   constructor(canvas: HTMLCanvasElement, engineConfig?: EngineConfig) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
     if (!ctx)
       throw new EngineError('Canvas 2D context not available', 'CANVAS_CONTEXT_UNAVAILABLE');
     this.ctx = ctx;
-    this.colors = {
-      ...DEFAULT_COLORS,
-      ...(engineConfig?.colors ? sanitizeColors(engineConfig.colors) : {}),
-    };
-    const fontFamily = engineConfig?.fontFamily
-      ? sanitizeFontFamily(engineConfig.fontFamily)
-      : DEFAULT_FONT;
-    this.fonts = buildFontCache(fontFamily);
-    this.bannerTexts = engineConfig?.bannerTexts
-      ? sanitizeBannerTexts(engineConfig.bannerTexts)
-      : DEFAULT_BANNERS;
+    const resolved = resolveEngineConfig(engineConfig);
+    this.colors = resolved.colors;
+    this.fonts = resolved.fonts;
+    this.bannerTexts = resolved.bannerTexts;
     this.config = { ...DEFAULT_CONFIG };
     this.state.bestScores = loadBestScores();
     this.state.difficulty = engineConfig?.difficulty ?? loadDifficulty();
@@ -77,15 +58,13 @@ export class FlappyEngine {
     this.bg = createBgSystem(this.config, this.bannerTexts);
     this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
   }
-
   async start(): Promise<void> {
     this.dpr = setupCanvas(this.canvas, this.ctx);
     this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
     this.renderer.buildGradients();
-    const HEART_TIMEOUT = 5000;
     this.renderer.heartImg = await Promise.race([
       loadHeartImage(this.colors.violet),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), HEART_TIMEOUT)),
+      new Promise<null>((r) => setTimeout(() => r(null), 5000)),
     ]);
     this.pipePool = Array.from({ length: PIPE_POOL_SIZE }, () => ({
       x: 0,

@@ -75,12 +75,10 @@ export class Renderer {
     this.pipeLip = buildPipeLipCache(this.deps.pipeWidth, this.dpr, this.colors);
   }
 
-  /** Pre-render a single cloud to an offscreen canvas for fast blitting. */
   prerenderCloud(c: Cloud): void {
     prerenderCloud(c, this.dpr, this.colors);
   }
 
-  /** Pre-render all near clouds and background-layer clouds. */
   prerenderAllClouds(nearClouds: Cloud[], bg: BackgroundSystem): void {
     prerenderAllClouds(nearClouds, bg, this.dpr, this.colors);
   }
@@ -131,7 +129,6 @@ export class Renderer {
     ctx.globalAlpha = 1;
   }
 
-  /** Draw the near-layer ambient clouds with transparency. */
   drawNearClouds(clouds: Cloud[]): void {
     this.ctx.globalAlpha = 0.12;
     drawCloudsPrerendered(this.ctx, clouds);
