@@ -1,6 +1,7 @@
+import { DESIGN_TOKENS } from '@repo/types';
 import type { GameColors } from '@repo/types';
 
-/** Pre-cached RGBA strings to avoid string allocation per frame */
+/** Pre-cached RGBA strings to avoid string allocation per frame. */
 export const RGBA = {
   scrim30: 'rgba(9, 9, 73, 0.3)',
   scrim35: 'rgba(9, 9, 73, 0.35)',
@@ -10,7 +11,7 @@ export const RGBA = {
   shadow05: 'rgba(0,0,0,0.05)',
 };
 
-/** Pre-compute all font strings to avoid template literal allocation per frame */
+/** Pre-computed CSS font strings to avoid template literal allocation per frame. */
 export interface CachedFonts {
   banner: string;
   score: string;
@@ -24,6 +25,11 @@ export interface CachedFonts {
   deadRetry: string;
 }
 
+/**
+ * Build all CSS font shorthand strings from a given font family.
+ * @param fontFamily The CSS font-family value, e.g. '"Poppins", sans-serif'.
+ * @returns Pre-computed font strings for every text context in the game.
+ */
 export function buildFontCache(fontFamily: string): CachedFonts {
   return {
     banner: `800 9px ${fontFamily}`,
@@ -39,14 +45,8 @@ export function buildFontCache(fontFamily: string): CachedFonts {
   };
 }
 
-export const DEFAULT_COLORS: GameColors = {
-  navy: '#090949',
-  violet: '#6500D9',
-  cyan: '#00D9FF',
-  magenta: '#D76EFF',
-  light: '#FBF6F6',
-  white: '#FFFFFF',
-  midviolet: '#4B00A0',
-};
+/** Default color palette from DESIGN_TOKENS. */
+export const DEFAULT_COLORS: GameColors = { ...DESIGN_TOKENS.colors };
 
+/** Default font family used when none is provided via EngineConfig. */
 export const DEFAULT_FONT = '"Poppins", sans-serif';

@@ -1,6 +1,10 @@
 import type { Bird, GameConfig, Pipe } from '@repo/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { BackgroundSystem } from '../background.js';
+import { DEFAULT_COLORS, buildFontCache } from '../cache.js';
 import { DEFAULT_CONFIG, DIFFICULTY, applyDifficulty } from '../config.js';
+import { EngineError } from '../errors.js';
+import { createLogger } from '../logger.js';
 import { TAU, maxOf } from '../math.js';
 import { loadBestScores, loadDifficulty, saveBestScores, saveDifficulty } from '../persistence.js';
 import {
@@ -11,6 +15,8 @@ import {
   updateBird,
   updatePipes,
 } from '../physics.js';
+import { drawBird, drawPipes, drawScore } from '../renderer-entities.js';
+import { generateSkylineSegment } from '../skyline.js';
 
 // --- Factories ---
 
@@ -285,5 +291,223 @@ describe('maxOf', () => {
 
   it('returns -Infinity for empty array', () => {
     expect(maxOf([], (x: number) => x)).toBe(Number.NEGATIVE_INFINITY);
+  });
+});
+
+// --- Canvas context factory for renderer tests ---
+
+function makeCanvasContext(): CanvasRenderingContext2D {
+  return {
+    save: vi.fn(),
+    restore: vi.fn(),
+    translate: vi.fn(),
+    rotate: vi.fn(),
+    scale: vi.fn(),
+    fillRect: vi.fn(),
+    strokeRect: vi.fn(),
+    clearRect: vi.fn(),
+    beginPath: vi.fn(),
+    closePath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    arc: vi.fn(),
+    fill: vi.fn(),
+    stroke: vi.fn(),
+    drawImage: vi.fn(),
+    fillText: vi.fn(),
+    measureText: vi.fn(() => ({ width: 50 })),
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    setTransform: vi.fn(),
+    canvas: { width: 400, height: 600 } as unknown as HTMLCanvasElement,
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 1,
+    font: '',
+    textAlign: 'left' as CanvasTextAlign,
+    textBaseline: 'top' as CanvasTextBaseline,
+    globalAlpha: 1,
+    globalCompositeOperation: 'source-over' as GlobalCompositeOperation,
+    shadowColor: '',
+    shadowBlur: 0,
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    lineCap: 'butt' as CanvasLineCap,
+    lineJoin: 'miter' as CanvasLineJoin,
+  } as unknown as CanvasRenderingContext2D;
+}
+
+// --- background.ts ---
+
+describe('BackgroundSystem', () => {
+  it('constructor creates an instance with null layers', () => {
+    const bg = new BackgroundSystem({
+      width: 380,
+      height: 520,
+      groundH: 50,
+      pipeSpeed: 2.2,
+      bannerTexts: ['Test'],
+    });
+    expect(bg).toBeInstanceOf(BackgroundSystem);
+    expect(bg.layers).toBeNull();
+  });
+
+  it('init() creates populated BgLayers', () => {
+    const bg = new BackgroundSystem({
+      width: 380,
+      height: 520,
+      groundH: 50,
+      pipeSpeed: 2.2,
+      bannerTexts: ['Test'],
+    });
+    bg.init();
+    expect(bg.layers).not.toBeNull();
+    expect(bg.layers?.farClouds.length).toBeGreaterThan(0);
+    expect(bg.layers?.skyline.length).toBeGreaterThan(0);
+    expect(bg.layers?.buildings.length).toBeGreaterThan(0);
+    expect(bg.layers?.trees.length).toBeGreaterThan(0);
+  });
+
+  it('update() scrolls layers when playing', () => {
+    const bg = new BackgroundSystem({
+      width: 380,
+      height: 520,
+      groundH: 50,
+      pipeSpeed: 2.2,
+      bannerTexts: ['Test'],
+    });
+    bg.init();
+    const skyXBefore = bg.layers?.skyline[0]?.x ?? 0;
+    bg.update(1, 1000, true);
+    const skyXAfter = bg.layers?.skyline[0]?.x ?? 0;
+    expect(skyXAfter).toBeLessThan(skyXBefore);
+  });
+});
+
+// --- cache.ts ---
+
+describe('buildFontCache', () => {
+  it('returns object with all required font size strings', () => {
+    const fonts = buildFontCache('"Poppins", sans-serif');
+    expect(fonts.banner).toContain('9px');
+    expect(fonts.score).toContain('32px');
+    expect(fonts.hint).toContain('11px');
+    expect(fonts.deadTitle).toContain('20px');
+    expect(fonts.fps).toContain('10px');
+  });
+});
+
+describe('DEFAULT_COLORS', () => {
+  it('has all required keys with valid hex values', () => {
+    const hexPattern = /^#[0-9A-Fa-f]{6}$/;
+    expect(DEFAULT_COLORS.navy).toMatch(hexPattern);
+    expect(DEFAULT_COLORS.violet).toMatch(hexPattern);
+    expect(DEFAULT_COLORS.cyan).toMatch(hexPattern);
+    expect(DEFAULT_COLORS.magenta).toMatch(hexPattern);
+    expect(DEFAULT_COLORS.light).toMatch(hexPattern);
+    expect(DEFAULT_COLORS.white).toMatch(hexPattern);
+    expect(DEFAULT_COLORS.midviolet).toMatch(hexPattern);
+  });
+});
+
+// --- renderer-entities.ts (mock canvas context) ---
+
+describe('drawBird', () => {
+  it('calls canvas translate, rotate, and setTransform', () => {
+    const ctx = makeCanvasContext();
+    drawBird(ctx, 100, 15, 70, 28, 1, null, DEFAULT_COLORS);
+    expect(ctx.translate).toHaveBeenCalled();
+    expect(ctx.rotate).toHaveBeenCalled();
+    expect(ctx.setTransform).toHaveBeenCalled();
+  });
+
+  it('draws fallback circle when heartImg is null', () => {
+    const ctx = makeCanvasContext();
+    drawBird(ctx, 100, 0, 70, 28, 1, null, DEFAULT_COLORS);
+    expect(ctx.beginPath).toHaveBeenCalled();
+    expect(ctx.arc).toHaveBeenCalled();
+    expect(ctx.fill).toHaveBeenCalled();
+  });
+});
+
+describe('drawPipes', () => {
+  it('renders pipe columns for active pipes', () => {
+    const ctx = makeCanvasContext();
+    const pipes: Pipe[] = [makePipe({ x: 100, topH: 80, scored: false })];
+    drawPipes(ctx, pipes, 1, 52, 162, 520, null, { canvas: null, logW: 60, logH: 20 });
+    expect(ctx.translate).toHaveBeenCalledWith(100, 0);
+  });
+
+  it('does nothing when activeCount is 0', () => {
+    const ctx = makeCanvasContext();
+    drawPipes(ctx, [], 0, 52, 162, 520, null, { canvas: null, logW: 60, logH: 20 });
+    expect(ctx.translate).not.toHaveBeenCalled();
+  });
+});
+
+describe('drawScore', () => {
+  it('renders score text with shadow and foreground', () => {
+    const ctx = makeCanvasContext();
+    const fonts = buildFontCache('"Poppins", sans-serif');
+    drawScore(ctx, 42, 380, fonts, DEFAULT_COLORS);
+    expect(ctx.fillText).toHaveBeenCalledTimes(2);
+    expect(ctx.fillText).toHaveBeenCalledWith('42', expect.any(Number), expect.any(Number));
+  });
+});
+
+// --- errors.ts ---
+
+describe('EngineError', () => {
+  it('has correct name and code properties', () => {
+    const err = new EngineError('test message', 'CANVAS_CONTEXT_UNAVAILABLE');
+    expect(err.name).toBe('EngineError');
+    expect(err.code).toBe('CANVAS_CONTEXT_UNAVAILABLE');
+    expect(err.message).toBe('test message');
+  });
+
+  it('is instance of Error', () => {
+    const err = new EngineError('oops', 'ASSET_LOAD_FAILED');
+    expect(err).toBeInstanceOf(Error);
+  });
+});
+
+// --- skyline.ts ---
+
+describe('generateSkylineSegment', () => {
+  it('returns a valid SkylineSegment', () => {
+    const seg = generateSkylineSegment('dallas', 0, 470);
+    expect(seg.x).toBe(0);
+    expect(seg.groundY).toBe(470);
+    expect(seg.city).toBe('dallas');
+    expect(seg.buildings.length).toBeGreaterThan(0);
+    expect(seg.totalW).toBeGreaterThan(0);
+  });
+
+  it('produces buildings with positive dimensions', () => {
+    const seg = generateSkylineSegment('montreal', 50, 470);
+    for (const b of seg.buildings) {
+      expect(b.w).toBeGreaterThan(0);
+      expect(b.h).toBeGreaterThan(0);
+    }
+  });
+});
+
+// --- logger.ts ---
+
+describe('createLogger', () => {
+  it('returns object with error/warn/info/debug methods', () => {
+    const log = createLogger('test');
+    expect(typeof log.error).toBe('function');
+    expect(typeof log.warn).toBe('function');
+    expect(typeof log.info).toBe('function');
+    expect(typeof log.debug).toBe('function');
+  });
+
+  it('calling logger methods does not throw', () => {
+    const log = createLogger('test');
+    expect(() => log.error('err')).not.toThrow();
+    expect(() => log.warn('warning')).not.toThrow();
+    expect(() => log.info('info')).not.toThrow();
+    expect(() => log.debug('dbg', { key: 'val' })).not.toThrow();
   });
 });

@@ -1,8 +1,12 @@
 import type { BackgroundConfig, DifficultyKey, DifficultyMap, GameConfig } from '@repo/types';
 
+/** Logical canvas width in pixels (before HiDPI scaling). */
 export const BASE_W = 380;
+
+/** Logical canvas height in pixels (before HiDPI scaling). */
 export const BASE_H = 520;
 
+/** Default game configuration using normal-difficulty values. */
 export const DEFAULT_CONFIG: GameConfig = {
   width: BASE_W,
   height: BASE_H,
@@ -21,6 +25,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   resetDelay: 600,
 };
 
+/** Physics and spawning presets for each difficulty level. */
 export const DIFFICULTY: DifficultyMap = {
   easy: {
     gravity: 0.22,
@@ -51,6 +56,7 @@ export const DIFFICULTY: DifficultyMap = {
   },
 };
 
+/** Parallax speed multipliers and opacity values for background layers. */
 export const BG: BackgroundConfig = {
   farSpeed: 0.08,
   midSpeed: 0.18,
@@ -70,9 +76,11 @@ export const BG: BackgroundConfig = {
   cloudMidAlpha: 0.1,
 };
 
+/** City skyline variants available for the parallax background layer. */
 export const SKYLINE_CITIES: Array<'phoenix' | 'neworleans' | 'montreal' | 'dallas' | 'nashville'> =
   ['phoenix', 'neworleans', 'montreal', 'dallas', 'nashville'];
 
+/** Overwrite physics-related fields on a GameConfig with the chosen difficulty preset. */
 export function applyDifficulty(key: DifficultyKey, config: GameConfig): void {
   const d = DIFFICULTY[key];
   config.gravity = d.gravity;

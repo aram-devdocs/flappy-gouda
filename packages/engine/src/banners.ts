@@ -1,3 +1,4 @@
+/** Default banner texts displayed on flying planes when none are provided. */
 export const DEFAULT_BANNERS: string[] = [
   'Triple Win!',
   'SNKO 2026',

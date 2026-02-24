@@ -1,10 +1,12 @@
 import type { Bird, Cloud, GameConfig, Pipe } from '@repo/types';
 
+/** Outcome flags returned after a physics tick. */
 export interface PhysicsResult {
   died: boolean;
   scored: boolean;
 }
 
+/** Apply gravity, velocity, and rotation to the bird for one physics step. */
 export function updateBird(bird: Bird, config: GameConfig, dt: number): void {
   bird.vy += config.gravity * dt;
   if (bird.vy > config.terminalVel) bird.vy = config.terminalVel;
@@ -20,10 +22,12 @@ export function updateBird(bird: Bird, config: GameConfig, dt: number): void {
   }
 }
 
+/** Returns true if the bird has hit the ground plane. */
 export function checkGroundCollision(bird: Bird, config: GameConfig): boolean {
   return bird.y + config.birdSize > config.height - config.groundH;
 }
 
+/** Returns true if the bird's hitbox overlaps a pipe opening. */
 export function checkPipeCollision(bird: Bird, pipe: Pipe, config: GameConfig): boolean {
   const pad = config.hitboxPad;
   const bx = config.birdX + pad;
@@ -38,10 +42,12 @@ export function checkPipeCollision(bird: Bird, pipe: Pipe, config: GameConfig): 
   return false;
 }
 
+/** Returns true if the bird has passed this pipe and it hasn't been scored yet. */
 export function checkPipeScore(pipe: Pipe, config: GameConfig): boolean {
   return !pipe.scored && pipe.x + config.pipeWidth < config.birdX;
 }
 
+/** Move clouds leftward and wrap them to the right edge when off-screen. */
 export function updateClouds(clouds: Cloud[], config: GameConfig, dt: number): void {
   for (const c of clouds) {
     c.x -= c.speed * dt;
@@ -52,6 +58,7 @@ export function updateClouds(clouds: Cloud[], config: GameConfig, dt: number): v
   }
 }
 
+/** Activate the next pipe in the pool with a random gap position. Returns the new active count. */
 export function spawnPipe(pipePool: Pipe[], activeCount: number, config: GameConfig): number {
   if (activeCount >= pipePool.length) return activeCount;
   const minTop = 60;
@@ -64,6 +71,7 @@ export function spawnPipe(pipePool: Pipe[], activeCount: number, config: GameCon
   return activeCount + 1;
 }
 
+/** Move all active pipes, recycle off-screen ones, check scoring and collisions. */
 export function updatePipes(
   pipePool: Pipe[],
   initialActiveCount: number,
