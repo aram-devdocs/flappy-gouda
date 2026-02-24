@@ -9,13 +9,25 @@
     "format": "biome format --write .",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
+    "test:coverage": "turbo test -- --coverage",
     "test:watch": "turbo test -- --watch",
     "storybook": "turbo storybook --filter=@repo/ui",
     "validate-architecture": "npx tsx scripts/validate-architecture.ts",
+    "validate:architecture": "npx tsx scripts/validate-architecture.ts",
+    "validate:file-sizes": "npx tsx scripts/validate-file-sizes.ts",
+    "validate:ui-stateless": "npx tsx scripts/validate-ui-stateless.ts",
+    "validate:storybook": "npx tsx scripts/validate-storybook-coverage.ts",
+    "validate:theme": "npx tsx scripts/validate-theme.ts",
+    "validate:error-boundaries": "npx tsx scripts/validate-error-boundaries.ts",
+    "validate:a11y": "npx tsx scripts/validate-accessibility.ts",
+    "validate:claude-md": "npx tsx scripts/validate-claude-md.ts",
+    "validate:dead-code": "npx tsx scripts/validate-dead-code.ts",
+    "validate:all": "npx tsx scripts/validate-architecture.ts && npx tsx scripts/validate-file-sizes.ts && npx tsx scripts/validate-ui-stateless.ts && npx tsx scripts/validate-storybook-coverage.ts && npx tsx scripts/validate-theme.ts && npx tsx scripts/validate-error-boundaries.ts && npx tsx scripts/validate-accessibility.ts && npx tsx scripts/validate-claude-md.ts",
     "prepare": "husky"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@vitest/coverage-v8": "^3.2.4",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
     "tsx": "^4.19.2",
@@ -23,7 +35,8 @@
     "typescript": "5.9.2"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json}": ["biome check --write --no-errors-on-unmatched"]
+    "*.{ts,tsx,js,jsx}": ["biome check --write --no-errors-on-unmatched"],
+    "*.{json,md}": ["biome format --write --no-errors-on-unmatched"]
   },
   "packageManager": "pnpm@10.10.0",
   "engines": {
