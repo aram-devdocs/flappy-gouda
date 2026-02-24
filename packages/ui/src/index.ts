@@ -5,6 +5,8 @@ export { ScoreDisplay } from './atoms/ScoreDisplay.js';
 export { FpsCounter } from './atoms/FpsCounter.js';
 export { GameFooter } from './atoms/GameFooter.js';
 export type { GameFooterProps } from './atoms/GameFooter.js';
+export { HeartIcon } from './atoms/HeartIcon.js';
+export type { HeartIconProps } from './atoms/HeartIcon.js';
 
 // Molecules
 export { DifficultyBadge } from './molecules/DifficultyBadge.js';

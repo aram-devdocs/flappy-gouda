@@ -1,4 +1,5 @@
-import type { Cloud, GameColors, Pipe, Plane } from '@repo/types';
+import type { Cloud, GameColors, Pipe } from '@repo/types';
+import { atIndex } from './assert.js';
 import type { BackgroundSystem } from './background.js';
 import type { CachedFonts } from './cache.js';
 import { BG } from './config.js';
@@ -54,6 +55,13 @@ export class Renderer {
     this.dpr = dpr;
   }
 
+  /** Release cached offscreen canvases and gradient references. */
+  dispose(): void {
+    this.grads = { skyGrad: null, accentGrad: null, pipeGrad: null };
+    this.pipeLip = { canvas: null, logW: 0, logH: 0 };
+    this.heartImg = null;
+  }
+
   /** Create and cache all canvas gradients and the pipe lip sprite. */
   buildGradients(): void {
     this.grads = buildGradients(
@@ -104,7 +112,7 @@ export class Renderer {
     drawCloudsPrerendered(ctx, bg.layers.midClouds);
 
     for (let i = 0; i < bg.planeActiveCount; i++) {
-      drawPlane(ctx, bg.planePool[i] as Plane, globalTime, this.colors, this.fonts);
+      drawPlane(ctx, atIndex(bg.planePool, i), globalTime, this.colors, this.fonts);
     }
 
     ctx.globalAlpha = BG.buildingAlpha;

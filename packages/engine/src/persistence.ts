@@ -4,6 +4,7 @@ import { createLogger } from './logger.js';
 
 const log = createLogger('persistence');
 
+const MAX_SCORE = 9999;
 const BEST_STORAGE_KEY = 'sn-flappy-best-v2';
 const DIFF_STORAGE_KEY = 'sn-flappy-diff';
 
@@ -15,7 +16,11 @@ export function loadBestScores(): BestScores {
     if (raw) {
       const parsed = JSON.parse(raw) as Record<string, unknown>;
       for (const k of DIFF_KEYS) {
-        if (typeof parsed[k] === 'number' && (parsed[k] as number) > 0) {
+        if (
+          typeof parsed[k] === 'number' &&
+          (parsed[k] as number) > 0 &&
+          (parsed[k] as number) <= MAX_SCORE
+        ) {
           scores[k] = parsed[k] as number;
         }
       }

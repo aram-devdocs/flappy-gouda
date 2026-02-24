@@ -1,4 +1,5 @@
-import type { BgLayers, Plane, SkylineCity } from '@repo/types';
+import type { BgLayers, Plane } from '@repo/types';
+import { atIndex } from './assert.js';
 import {
   computeMaxRight,
   createEmptyLayers,
@@ -9,8 +10,10 @@ import {
   populateMidClouds,
   populateSkyline,
   populateTrees,
+  randomBuildingType,
 } from './background-init.js';
-import { BG, SKYLINE_CITIES } from './config.js';
+import { BG, PLANE_PARAMS, SKYLINE_CITIES } from './config.js';
+import { poolRemove } from './pool.js';
 
 interface BackgroundDeps {
   width: number;
@@ -20,9 +23,6 @@ interface BackgroundDeps {
   bannerTexts: string[];
 }
 
-const PLANE_ALT_MIN = 12;
-const PLANE_ALT_MAX = 160;
-const PLANE_ALT_SEP = 45;
 /** Manages parallax background layers: clouds, skyline, buildings, trees, and planes. */
 export class BackgroundSystem {
   layers: BgLayers | null = null;
@@ -60,11 +60,11 @@ export class BackgroundSystem {
     let y: number;
     let attempts = 0;
     do {
-      y = PLANE_ALT_MIN + Math.random() * (PLANE_ALT_MAX - PLANE_ALT_MIN);
+      y = PLANE_PARAMS.altMin + Math.random() * (PLANE_PARAMS.altMax - PLANE_PARAMS.altMin);
       attempts++;
     } while (attempts < 20 && this.planeAltConflict(y));
     const goingRight = Math.random() < 0.5;
-    const p = this.planePool[this.planeActiveCount++] as Plane;
+    const p = atIndex(this.planePool, this.planeActiveCount++);
     p.x = goingRight ? -180 : this.deps.width + 180;
     p.y = y;
     p.dir = goingRight ? 1 : -1;
@@ -72,23 +72,26 @@ export class BackgroundSystem {
     p.bannerW = bannerText.length * 6.5 + 24;
     p.wobble = Math.random() * 1000;
     p.speed = BG.planeSpeed;
-    this.nextPlaneTime = now + 8000 + Math.random() * 15000;
+    this.nextPlaneTime =
+      now + PLANE_PARAMS.spawnDelayMin + Math.random() * PLANE_PARAMS.spawnDelayRange;
   }
 
   private planeAltConflict(y: number): boolean {
     for (let i = 0; i < this.planeActiveCount; i++) {
-      if (Math.abs((this.planePool[i] as Plane).y - y) < PLANE_ALT_SEP) return true;
+      if (Math.abs(atIndex(this.planePool, i).y - y) < PLANE_PARAMS.altSep) return true;
     }
     return false;
   }
 
   /** Advance all background layers by one tick. */
-  update(dt: number, now: number, isPlaying: boolean): void {
+  update(dt: number, now: number, isPlaying: boolean, reducedMotion = false): void {
     if (!this.layers) return;
     const W = this.deps.width;
-    const ambientMul = isPlaying ? 1 : 0.35;
+    const ambientMul = isPlaying ? 1 : reducedMotion ? 0 : 0.35;
     this.updateClouds(ambientMul, dt, W);
-    this.updatePlanes(ambientMul, dt, W, now);
+    if (!reducedMotion) {
+      this.updatePlanes(ambientMul, dt, W, now);
+    }
     if (!isPlaying) return;
     this.updateScrollingLayers(dt);
   }
@@ -113,16 +116,10 @@ export class BackgroundSystem {
 
   private updatePlanes(ambientMul: number, dt: number, W: number, now: number): void {
     for (let i = this.planeActiveCount - 1; i >= 0; i--) {
-      const p = this.planePool[i] as Plane;
+      const p = atIndex(this.planePool, i);
       p.x += p.dir * p.speed * this.deps.pipeSpeed * dt * ambientMul;
       if ((p.dir > 0 && p.x > W + 250 + p.bannerW) || (p.dir < 0 && p.x < -250 - p.bannerW)) {
-        const last = this.planeActiveCount - 1;
-        if (i !== last) {
-          const tmp = this.planePool[i] as Plane;
-          this.planePool[i] = this.planePool[last] as Plane;
-          this.planePool[last] = tmp;
-        }
-        this.planeActiveCount--;
+        this.planeActiveCount = poolRemove(this.planePool, i, this.planeActiveCount);
       }
     }
     if (now > this.nextPlaneTime && this.planeActiveCount < 2) {
@@ -159,7 +156,7 @@ export class BackgroundSystem {
         const gap = 5;
         seg.x = this.layers.maxRightSkyline + gap;
         this.layers.maxRightSkyline = seg.x + seg.totalW;
-        seg.city = SKYLINE_CITIES[Math.floor(Math.random() * SKYLINE_CITIES.length)] as SkylineCity;
+        seg.city = atIndex(SKYLINE_CITIES, Math.floor(Math.random() * SKYLINE_CITIES.length));
       }
     }
   }
@@ -173,8 +170,7 @@ export class BackgroundSystem {
         b.x = this.layers.maxRightBuildings + gap;
         b.h = 30 + Math.random() * 60;
         b.y = this.deps.height - this.deps.groundH - b.h;
-        const rand = Math.random();
-        b.type = rand < 0.4 ? 'house' : rand < 0.65 ? 'apartment' : 'office';
+        b.type = randomBuildingType();
         b.windows = Math.floor(Math.random() * 4) + 1;
         this.layers.maxRightBuildings = b.x + b.w;
       }

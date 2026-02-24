@@ -1,5 +1,7 @@
 import type { GameColors, Pipe } from '@repo/types';
+import { atIndex } from './assert.js';
 import type { CachedFonts } from './cache.js';
+import { PIPE_LIP } from './config.js';
 import { DEG_TO_RAD, TAU } from './math.js';
 import type { PipeLipCache } from './renderer-prerender.js';
 
@@ -48,7 +50,7 @@ export function drawPipes(
   pipeLip: PipeLipCache,
 ): void {
   for (let i = 0; i < activeCount; i++) {
-    const p = pipes[i] as Pipe;
+    const p = atIndex(pipes, i);
     const gapBottom = p.topH + pipeGap;
 
     ctx.save();
@@ -59,7 +61,13 @@ export function drawPipes(
       ctx.fillRect(0, -4, pipeWidth, p.topH + 4);
     }
     if (pipeLip.canvas) {
-      ctx.drawImage(pipeLip.canvas, -4, p.topH - 20, pipeLip.logW, pipeLip.logH);
+      ctx.drawImage(
+        pipeLip.canvas,
+        -PIPE_LIP.extraW / 2,
+        p.topH - PIPE_LIP.height,
+        pipeLip.logW,
+        pipeLip.logH,
+      );
     }
 
     if (pipeGrad) {
@@ -67,7 +75,7 @@ export function drawPipes(
       ctx.fillRect(0, gapBottom, pipeWidth, height - gapBottom);
     }
     if (pipeLip.canvas) {
-      ctx.drawImage(pipeLip.canvas, -4, gapBottom, pipeLip.logW, pipeLip.logH);
+      ctx.drawImage(pipeLip.canvas, -PIPE_LIP.extraW / 2, gapBottom, pipeLip.logW, pipeLip.logH);
     }
 
     ctx.restore();

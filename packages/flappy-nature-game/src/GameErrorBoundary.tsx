@@ -1,6 +1,9 @@
+import { createLogger } from '@repo/engine';
 import { ErrorFallback } from '@repo/ui';
 import { Component } from 'react';
-import type { ReactNode } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
+
+const log = createLogger('GameErrorBoundary');
 
 /** Props for {@link GameErrorBoundary}. */
 interface Props {
@@ -25,8 +28,11 @@ export class GameErrorBoundary extends Component<Props, State> {
     return { hasError: true, errorMessage: error.message };
   }
 
-  componentDidCatch(_error: Error): void {
-    // Logging could be added here via createLogger from @repo/engine
+  componentDidCatch(error: Error, info: ErrorInfo): void {
+    log.error('Uncaught rendering error', {
+      error: error.message,
+      componentStack: info.componentStack ?? '',
+    });
   }
 
   private handleReset = (): void => {

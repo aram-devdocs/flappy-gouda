@@ -1,4 +1,7 @@
 import type { Bird, Cloud, GameConfig, Pipe } from '@repo/types';
+import { atIndex } from './assert.js';
+import { BIRD_ROTATION, PIPE_SPAWN_MARGIN } from './config.js';
+import { poolRemove } from './pool.js';
 
 /** Outcome flags returned after a physics tick. */
 export interface PhysicsResult {
@@ -8,12 +11,16 @@ export interface PhysicsResult {
 
 /** Apply gravity, velocity, and rotation to the bird for one physics step. */
 export function updateBird(bird: Bird, config: GameConfig, dt: number): void {
+  if (!Number.isFinite(bird.vy)) bird.vy = 0;
   bird.vy += config.gravity * dt;
   if (bird.vy > config.terminalVel) bird.vy = config.terminalVel;
   bird.y += bird.vy * dt;
 
-  const targetRot = Math.max(-20, Math.min(55, bird.vy * 3.2));
-  bird.rot += (targetRot - bird.rot) * 0.22;
+  const targetRot = Math.max(
+    BIRD_ROTATION.minDeg,
+    Math.min(BIRD_ROTATION.maxDeg, bird.vy * BIRD_ROTATION.velocityScale),
+  );
+  bird.rot += (targetRot - bird.rot) * BIRD_ROTATION.lerpFactor;
 
   // Ceiling clamp
   if (bird.y < 0) {
@@ -61,10 +68,10 @@ export function updateClouds(clouds: Cloud[], config: GameConfig, dt: number): v
 /** Activate the next pipe in the pool with a random gap position. Returns the new active count. */
 export function spawnPipe(pipePool: Pipe[], activeCount: number, config: GameConfig): number {
   if (activeCount >= pipePool.length) return activeCount;
-  const minTop = 60;
-  const maxTop = config.height - config.groundH - config.pipeGap - 60;
+  const minTop = PIPE_SPAWN_MARGIN;
+  const maxTop = config.height - config.groundH - config.pipeGap - PIPE_SPAWN_MARGIN;
   const topH = minTop + Math.random() * (maxTop - minTop);
-  const p = pipePool[activeCount] as Pipe;
+  const p = atIndex(pipePool, activeCount);
   p.x = config.width;
   p.topH = topH;
   p.scored = false;
@@ -84,18 +91,12 @@ export function updatePipes(
   let count = initialActiveCount;
 
   for (let i = count - 1; i >= 0; i--) {
-    const p = pipePool[i] as Pipe;
+    const p = atIndex(pipePool, i);
     p.x -= config.pipeSpeed * dt;
 
     // Remove off-screen
     if (p.x + config.pipeWidth < 0) {
-      const last = count - 1;
-      if (i !== last) {
-        const tmp = pipePool[i] as Pipe;
-        pipePool[i] = pipePool[last] as Pipe;
-        pipePool[last] = tmp;
-      }
-      count--;
+      count = poolRemove(pipePool, i, count);
       continue;
     }
 

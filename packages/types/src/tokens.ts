@@ -1,3 +1,5 @@
+import type { GameColors } from './game';
+
 /** Shared design tokens for colors and CSS variable naming. */
 export const DESIGN_TOKENS = {
   colors: {
@@ -12,3 +14,6 @@ export const DESIGN_TOKENS = {
   },
   cssVarPrefix: '--fn',
 } as const;
+
+/** Default game color palette derived from design tokens. */
+export const DEFAULT_GAME_COLORS: GameColors = { ...DESIGN_TOKENS.colors };

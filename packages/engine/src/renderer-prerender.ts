@@ -1,6 +1,10 @@
 import type { Cloud, GameColors } from '@repo/types';
 import type { BackgroundSystem } from './background.js';
+import { PIPE_LIP } from './config.js';
+import { createLogger } from './logger.js';
 import { TAU } from './math.js';
+
+const log = createLogger('renderer-prerender');
 
 export interface PipeLipCache {
   canvas: HTMLCanvasElement | null;
@@ -18,7 +22,10 @@ export function prerenderCloud(c: Cloud, dpr: number, colors: GameColors): void 
   offC.width = cW * dpr;
   offC.height = cH * dpr;
   const oCtx = offC.getContext('2d');
-  if (!oCtx) return;
+  if (!oCtx) {
+    log.warn('Failed to get 2D context for cloud prerender');
+    return;
+  }
   oCtx.scale(dpr, dpr);
   oCtx.fillStyle = colors.cyan;
   oCtx.beginPath();
@@ -52,14 +59,17 @@ export function buildPipeLipCache(
   dpr: number,
   colors: GameColors,
 ): PipeLipCache {
-  const lipW = pipeWidth + 8;
-  const lipH = 20;
-  const lipR = 8;
+  const lipW = pipeWidth + PIPE_LIP.extraW;
+  const lipH = PIPE_LIP.height;
+  const lipR = PIPE_LIP.radius;
   const offC = document.createElement('canvas');
   offC.width = lipW * dpr;
   offC.height = lipH * dpr;
   const oCtx = offC.getContext('2d');
-  if (!oCtx) return { canvas: null, logW: lipW, logH: lipH };
+  if (!oCtx) {
+    log.warn('Failed to get 2D context for pipe lip cache');
+    return { canvas: null, logW: lipW, logH: lipH };
+  }
   oCtx.scale(dpr, dpr);
   oCtx.fillStyle = colors.violet;
   oCtx.beginPath();

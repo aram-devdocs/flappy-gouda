@@ -1,4 +1,4 @@
-import { DESIGN_TOKENS } from '@repo/types';
+import { DEFAULT_GAME_COLORS } from '@repo/types';
 import type { GameColors } from '@repo/types';
 import type { ReactNode } from 'react';
 
@@ -12,11 +12,9 @@ interface GameContainerProps {
   children: ReactNode;
 }
 
-const DEFAULT_COLORS: GameColors = { ...DESIGN_TOKENS.colors };
-
 /** Outer wrapper that sets CSS custom properties for the game's color theme. */
 export function GameContainer({ colors, className, children }: GameContainerProps) {
-  const merged = { ...DEFAULT_COLORS, ...colors };
+  const merged = { ...DEFAULT_GAME_COLORS, ...colors };
 
   return (
     <main

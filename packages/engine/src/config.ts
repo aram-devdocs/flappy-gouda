@@ -1,4 +1,5 @@
 import type { BackgroundConfig, DifficultyKey, DifficultyMap, GameConfig } from '@repo/types';
+import { EngineError } from './errors.js';
 
 /** Logical canvas width in pixels (before HiDPI scaling). */
 export const BASE_W = 380;
@@ -76,6 +77,42 @@ export const BG: BackgroundConfig = {
   cloudMidAlpha: 0.1,
 };
 
+/** Bird rotation parameters for smooth visual tilt. */
+export const BIRD_ROTATION = {
+  minDeg: -20,
+  maxDeg: 55,
+  velocityScale: 3.2,
+  lerpFactor: 0.22,
+} as const;
+
+/** Minimum distance from top/bottom edge when spawning pipe gaps. */
+export const PIPE_SPAWN_MARGIN = 60;
+
+/** Cloud layer spawn parameters. */
+export const CLOUD_PARAMS = {
+  far: { minW: 70, rangeW: 80, spreadX: 1.5, minY: 15, rangeY: 60 },
+  mid: { minW: 35, rangeW: 45, spreadX: 1.3, minY: 60, rangeY: 100 },
+} as const;
+
+/** Pipe lip cap dimensions. */
+export const PIPE_LIP = {
+  extraW: 8,
+  height: 20,
+  radius: 8,
+} as const;
+
+/** Plane spawn altitude and timing parameters. */
+export const PLANE_PARAMS = {
+  altMin: 12,
+  altMax: 160,
+  altSep: 45,
+  spawnDelayMin: 8000,
+  spawnDelayRange: 15000,
+} as const;
+
+/** Maximum number of pipe pairs in the object pool. */
+export const PIPE_POOL_SIZE = 5;
+
 /** City skyline variants available for the parallax background layer. */
 export const SKYLINE_CITIES: Array<'phoenix' | 'neworleans' | 'montreal' | 'dallas' | 'nashville'> =
   ['phoenix', 'neworleans', 'montreal', 'dallas', 'nashville'];
@@ -90,4 +127,23 @@ export function applyDifficulty(key: DifficultyKey, config: GameConfig): void {
   config.pipeSpeed = d.pipeSpeed;
   config.pipeSpawn = d.pipeSpawn;
   config.hitboxPad = d.hitboxPad;
+}
+
+/** Validate that a GameConfig has sane values. Throws EngineError on invalid config. */
+export function validateConfig(config: GameConfig): void {
+  if (config.width <= 0 || config.height <= 0) {
+    throw new EngineError('Canvas dimensions must be positive', 'INVALID_CONFIG');
+  }
+  if (config.gravity <= 0) {
+    throw new EngineError('Gravity must be positive', 'INVALID_CONFIG');
+  }
+  if (config.pipeGap <= 0) {
+    throw new EngineError('Pipe gap must be positive', 'INVALID_CONFIG');
+  }
+  if (config.groundH >= config.height) {
+    throw new EngineError('Ground height must be less than canvas height', 'INVALID_CONFIG');
+  }
+  if (config.birdSize <= 0) {
+    throw new EngineError('Bird size must be positive', 'INVALID_CONFIG');
+  }
 }

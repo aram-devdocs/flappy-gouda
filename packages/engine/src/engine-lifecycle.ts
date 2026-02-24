@@ -14,9 +14,7 @@ export function resetEngine(
   setPipeCount(0);
   loop.resetAfterPause();
   state.resetGameState(bird, config);
-  prevBird.y = bird.y;
-  prevBird.vy = bird.vy;
-  prevBird.rot = bird.rot;
+  syncPrevBird(prevBird, bird);
 }
 
 /** Copy bird snapshot into prevBird for interpolation. */

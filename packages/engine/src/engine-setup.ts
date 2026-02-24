@@ -5,7 +5,7 @@ import { BASE_H, BASE_W } from './config.js';
 import { Renderer } from './renderer.js';
 
 export function setupCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): number {
-  const maxCssW = Math.min(BASE_W, window.innerWidth - 48);
+  const maxCssW = Math.max(1, Math.min(BASE_W, window.innerWidth - 48));
   const cssScale = maxCssW / BASE_W;
   const cssW = Math.round(BASE_W * cssScale);
   const cssH = Math.round(BASE_H * cssScale);

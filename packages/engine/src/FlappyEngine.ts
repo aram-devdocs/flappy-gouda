@@ -12,12 +12,13 @@ import type {
 import type { BackgroundSystem } from './background.js';
 import { DEFAULT_BANNERS } from './banners.js';
 import { type CachedFonts, DEFAULT_COLORS, DEFAULT_FONT, buildFontCache } from './cache.js';
-import { DEFAULT_CONFIG, applyDifficulty } from './config.js';
+import { DEFAULT_CONFIG, PIPE_POOL_SIZE, applyDifficulty, validateConfig } from './config.js';
 import { EngineEventEmitter } from './engine-events.js';
 import { resetEngine, syncPrevBird } from './engine-lifecycle.js';
 import { EngineLoop } from './engine-loop.js';
 import { createBgSystem, createRenderer, initClouds, setupCanvas } from './engine-setup.js';
 import { EngineState } from './engine-state.js';
+import { EngineError } from './errors.js';
 import { loadHeartImage } from './heart.js';
 import { loadBestScores, loadDifficulty } from './persistence.js';
 import {
@@ -29,6 +30,7 @@ import {
 } from './physics.js';
 import { hitTestSettingsIcon } from './renderer-entities.js';
 import type { Renderer } from './renderer.js';
+import { sanitizeBannerTexts, sanitizeColors, sanitizeFontFamily } from './sanitize.js';
 
 export class FlappyEngine {
   private config: GameConfig;
@@ -53,15 +55,25 @@ export class FlappyEngine {
   constructor(canvas: HTMLCanvasElement, engineConfig?: EngineConfig) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas 2D context not available');
+    if (!ctx)
+      throw new EngineError('Canvas 2D context not available', 'CANVAS_CONTEXT_UNAVAILABLE');
     this.ctx = ctx;
-    this.colors = { ...DEFAULT_COLORS, ...engineConfig?.colors };
-    this.fonts = buildFontCache(engineConfig?.fontFamily ?? DEFAULT_FONT);
-    this.bannerTexts = engineConfig?.bannerTexts ?? DEFAULT_BANNERS;
+    this.colors = {
+      ...DEFAULT_COLORS,
+      ...(engineConfig?.colors ? sanitizeColors(engineConfig.colors) : {}),
+    };
+    const fontFamily = engineConfig?.fontFamily
+      ? sanitizeFontFamily(engineConfig.fontFamily)
+      : DEFAULT_FONT;
+    this.fonts = buildFontCache(fontFamily);
+    this.bannerTexts = engineConfig?.bannerTexts
+      ? sanitizeBannerTexts(engineConfig.bannerTexts)
+      : DEFAULT_BANNERS;
     this.config = { ...DEFAULT_CONFIG };
     this.state.bestScores = loadBestScores();
     this.state.difficulty = engineConfig?.difficulty ?? loadDifficulty();
     applyDifficulty(this.state.difficulty, this.config);
+    validateConfig(this.config);
     this.bg = createBgSystem(this.config, this.bannerTexts);
     this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
   }
@@ -70,8 +82,16 @@ export class FlappyEngine {
     this.dpr = setupCanvas(this.canvas, this.ctx);
     this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
     this.renderer.buildGradients();
-    this.renderer.heartImg = await loadHeartImage(this.colors.violet);
-    this.pipePool = Array.from({ length: 5 }, () => ({ x: 0, topH: 0, scored: false }));
+    const HEART_TIMEOUT = 5000;
+    this.renderer.heartImg = await Promise.race([
+      loadHeartImage(this.colors.violet),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), HEART_TIMEOUT)),
+    ]);
+    this.pipePool = Array.from({ length: PIPE_POOL_SIZE }, () => ({
+      x: 0,
+      topH: 0,
+      scored: false,
+    }));
     this.pipeActiveCount = 0;
     this.bird = { y: 0, vy: 0, rot: 0 };
     this.clouds = initClouds(this.config);
@@ -113,6 +133,7 @@ export class FlappyEngine {
   setDifficulty(key: DifficultyKey): void {
     this.state.setDifficulty(key, this.config);
     const prevHeartImg = this.renderer.heartImg;
+    this.renderer.dispose();
     this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
     this.renderer.buildGradients();
     this.renderer.heartImg = prevHeartImg;
@@ -163,7 +184,7 @@ export class FlappyEngine {
   private update(dt: number, now: number): void {
     this.loop.globalTime = now;
     updateClouds(this.clouds, this.config, dt);
-    this.bg.update(dt, now, this.state.state === 'play');
+    this.bg.update(dt, now, this.state.state === 'play', this.loop.reducedMotion);
     if (this.state.state !== 'play') return;
     syncPrevBird(this.prevBird, this.bird);
     updateBird(this.bird, this.config, dt);

@@ -6,5 +6,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     base: env.VITE_BASE_PATH || '/',
+    build: {
+      target: 'ES2022',
+      sourcemap: false,
+      minify: 'esbuild',
+    },
   };
 });

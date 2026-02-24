@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 /** Options for {@link useGameInput}. */
 interface UseGameInputOptions {
@@ -22,9 +22,12 @@ export function useGameInput({
   canvasRef,
   enabled = true,
 }: UseGameInputOptions): void {
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!enabled) return;
+      if (!enabledRef.current) return;
       if (e.key === 'Escape') {
         onEscape?.();
         return;
@@ -35,21 +38,21 @@ export function useGameInput({
         onFlap();
       }
     },
-    [onFlap, onEscape, enabled],
+    [onFlap, onEscape],
   );
 
   const handleClick = useCallback(
     (e: MouseEvent) => {
-      if (!enabled) return;
+      if (!enabledRef.current) return;
       if (onCanvasInteract?.(e.offsetX, e.offsetY)) return;
       onFlap();
     },
-    [onFlap, onCanvasInteract, enabled],
+    [onFlap, onCanvasInteract],
   );
 
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
-      if (!enabled) return;
+      if (!enabledRef.current) return;
       e.preventDefault();
       const touch = e.touches[0];
       if (touch && onCanvasInteract) {
@@ -58,7 +61,7 @@ export function useGameInput({
       }
       onFlap();
     },
-    [onFlap, onCanvasInteract, enabled],
+    [onFlap, onCanvasInteract],
   );
 
   const handleMouseMove = useCallback(

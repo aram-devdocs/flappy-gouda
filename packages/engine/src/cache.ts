@@ -1,4 +1,4 @@
-import { DESIGN_TOKENS } from '@repo/types';
+import { DEFAULT_GAME_COLORS } from '@repo/types';
 import type { GameColors } from '@repo/types';
 
 /** Pre-cached RGBA strings to avoid string allocation per frame. */
@@ -46,7 +46,7 @@ export function buildFontCache(fontFamily: string): CachedFonts {
 }
 
 /** Default color palette from DESIGN_TOKENS. */
-export const DEFAULT_COLORS: GameColors = { ...DESIGN_TOKENS.colors };
+export const DEFAULT_COLORS: GameColors = DEFAULT_GAME_COLORS;
 
 /** Default font family used when none is provided via EngineConfig. */
 export const DEFAULT_FONT = '"Poppins", sans-serif';

@@ -1,5 +1,7 @@
 import type { EngineEventEmitter } from './engine-events.js';
+import { createLogger } from './logger.js';
 
+const log = createLogger('EngineLoop');
 const TICK_MS = 1000 / 60;
 const MAX_TICKS = 4;
 
@@ -10,6 +12,7 @@ export class EngineLoop {
   accumulator = 0;
   globalTime = 0;
   alpha = 0;
+  reducedMotion = false;
 
   private fpsFrames = 0;
   private fpsLastTime = 0;
@@ -25,6 +28,7 @@ export class EngineLoop {
     this.frameTime = performance.now();
     this.fpsLastTime = this.frameTime;
     this.accumulator = 0;
+    this.reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     this.attachVisibilityHandler();
   }
 
@@ -44,7 +48,13 @@ export class EngineLoop {
     this.accumulator += delta;
     let ticks = 0;
     while (this.accumulator >= TICK_MS && ticks < MAX_TICKS) {
-      updateFn(1, now);
+      try {
+        updateFn(1, now);
+      } catch (err) {
+        log.error('Update tick failed', { error: String(err) });
+        this.stop();
+        return;
+      }
       this.accumulator -= TICK_MS;
       ticks++;
     }
@@ -52,7 +62,13 @@ export class EngineLoop {
 
     this.alpha = this.accumulator / TICK_MS;
 
-    drawFn(now);
+    try {
+      drawFn(now);
+    } catch (err) {
+      log.error('Draw frame failed', { error: String(err) });
+      this.stop();
+      return;
+    }
     this.rafId = requestAnimationFrame((t) => this.tick(t, updateFn, drawFn));
   }
 
