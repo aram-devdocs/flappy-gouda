@@ -181,16 +181,7 @@ export class Renderer {
   }
 
   drawBird(y: number, rot: number): void {
-    drawBird(
-      this.ctx,
-      y,
-      rot,
-      this.deps.birdX,
-      this.deps.birdSize,
-      this.dpr,
-      this.heartImg,
-      this.colors,
-    );
+    drawBird(this.ctx, y, rot, this.deps.birdX, this.deps.birdSize, this.heartImg, this.colors);
   }
 
   drawScore(score: number): void {

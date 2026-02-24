@@ -464,7 +464,7 @@ describe('DEFAULT_COLORS', () => {
 describe('drawBird', () => {
   it('calls canvas save, translate, rotate, and restore', () => {
     const ctx = makeCanvasContext();
-    drawBird(ctx, 100, 15, 70, 28, 1, null, DEFAULT_COLORS);
+    drawBird(ctx, 100, 15, 70, 28, null, DEFAULT_COLORS);
     expect(ctx.save).toHaveBeenCalled();
     expect(ctx.translate).toHaveBeenCalled();
     expect(ctx.rotate).toHaveBeenCalled();
@@ -473,7 +473,7 @@ describe('drawBird', () => {
 
   it('draws fallback circle when heartImg is null', () => {
     const ctx = makeCanvasContext();
-    drawBird(ctx, 100, 0, 70, 28, 1, null, DEFAULT_COLORS);
+    drawBird(ctx, 100, 0, 70, 28, null, DEFAULT_COLORS);
     expect(ctx.beginPath).toHaveBeenCalled();
     expect(ctx.arc).toHaveBeenCalled();
     expect(ctx.fill).toHaveBeenCalled();

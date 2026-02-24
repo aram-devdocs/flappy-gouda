@@ -144,7 +144,6 @@ export class FlappyEngine {
   getDifficulty() {
     return this.state.difficulty;
   }
-
   on<K extends EngineEventName>(event: K, cb: EngineEvents[K]): void {
     this.events.on(event, cb);
   }

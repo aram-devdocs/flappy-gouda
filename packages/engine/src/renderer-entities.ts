@@ -9,7 +9,6 @@ export function drawBird(
   rot: number,
   birdX: number,
   birdSize: number,
-  _dpr: number,
   heartImg: HTMLImageElement | null,
   colors: GameColors,
 ): void {
