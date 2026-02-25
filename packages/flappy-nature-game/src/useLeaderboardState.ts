@@ -41,12 +41,12 @@ export function useLeaderboardState(
     }
   }, [state, score, difficulty, nickname, callbacks]);
 
-  // Show nickname modal when needed
+  // Show nickname modal on first death (defer so players can browse scores on idle)
   useEffect(() => {
-    if (callbacks && nickname === null) {
+    if (state === 'dead' && callbacks && nickname === null) {
       setShowNicknameModal(true);
     }
-  }, [callbacks, nickname]);
+  }, [state, callbacks, nickname]);
 
   const toggleLeaderboard = useCallback(() => {
     setLeaderboardOpen((prev) => !prev);

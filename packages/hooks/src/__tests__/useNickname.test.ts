@@ -68,4 +68,54 @@ describe('useNickname', () => {
 
     setItemSpy.mockRestore();
   });
+
+  it('syncs nickname from cross-tab storage event', () => {
+    const { result } = renderHook(() => useNickname());
+    expect(result.current.nickname).toBeNull();
+
+    // Simulate another tab setting the nickname
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: NICKNAME_KEY,
+          newValue: JSON.stringify('TAB'),
+        }),
+      );
+    });
+
+    expect(result.current.nickname).toBe('TAB');
+  });
+
+  it('clears nickname on cross-tab storage removal', () => {
+    localStorage.setItem(NICKNAME_KEY, JSON.stringify('OLD'));
+    const { result } = renderHook(() => useNickname());
+    expect(result.current.nickname).toBe('OLD');
+
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: NICKNAME_KEY,
+          newValue: null,
+        }),
+      );
+    });
+
+    expect(result.current.nickname).toBeNull();
+  });
+
+  it('ignores storage events for other keys', () => {
+    const { result } = renderHook(() => useNickname());
+    expect(result.current.nickname).toBeNull();
+
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'some-other-key',
+          newValue: JSON.stringify('NOPE'),
+        }),
+      );
+    });
+
+    expect(result.current.nickname).toBeNull();
+  });
 });

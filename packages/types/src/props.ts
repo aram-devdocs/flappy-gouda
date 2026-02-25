@@ -17,6 +17,8 @@ export interface FlappyNatureGameProps extends LeaderboardProps {
   onScoreChange?: (score: number) => void;
   /** Called when a new personal best score is set. */
   onBestScoreChange?: (scores: BestScores) => void;
+  /** Called when the player changes the difficulty level. */
+  onDifficultyChange?: (difficulty: DifficultyKey) => void;
   /** Additional CSS class name applied to the outer container. */
   className?: string;
   /** Whether to show the FPS counter overlay. */

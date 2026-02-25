@@ -27,6 +27,8 @@ export { ScoreMigrationModal } from './organisms/ScoreMigrationModal.js';
 export type { ScoreMigrationModalProps } from './organisms/ScoreMigrationModal.js';
 export { LeaderboardPanel } from './organisms/LeaderboardPanel.js';
 export type { LeaderboardPanelProps } from './organisms/LeaderboardPanel.js';
+export { LeaderboardSidebar } from './organisms/LeaderboardSidebar.js';
+export type { LeaderboardSidebarProps } from './organisms/LeaderboardSidebar.js';
 export { NicknameModal } from './organisms/NicknameModal.js';
 export type { NicknameModalProps } from './organisms/NicknameModal.js';
 export { GameContainer } from './organisms/GameContainer.js';

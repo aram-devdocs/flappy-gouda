@@ -2,18 +2,24 @@ import {
   type DifficultyKey,
   FlappyNatureGame,
   type LeaderboardCallbacks,
-  type LeaderboardData,
+  LeaderboardSidebar,
+  LeaderboardTab,
+  RADIUS,
+  Z_INDEX,
   useNickname,
 } from '@repo/flappy-nature-game';
-import { useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
 import { useLeaderboard } from '../hooks/useLeaderboard.js';
 import { useLeaderboardRealtime } from '../hooks/useLeaderboardRealtime.js';
 import { useLeaderboardService } from './LeaderboardProvider.js';
 
 export function GameWithLeaderboard() {
   const service = useLeaderboardService();
+  const queryClient = useQueryClient();
   const { nickname, setNickname } = useNickname();
-  const [difficulty] = useState<DifficultyKey>('normal');
+  const [difficulty, setDifficulty] = useState<DifficultyKey>('normal');
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
 
   const { data: entries, isLoading } = useLeaderboard(difficulty);
   const { status: connectionStatus } = useLeaderboardRealtime(difficulty);
@@ -23,44 +29,76 @@ export function GameWithLeaderboard() {
     return entries.find((e) => e.nickname === nickname) ?? null;
   }, [entries, nickname]);
 
-  const leaderboardData: LeaderboardData = useMemo(
-    () => ({
-      entries: entries ?? [],
-      playerEntry,
-      isLoading,
-      connectionStatus,
-    }),
-    [entries, playerEntry, isLoading, connectionStatus],
-  );
+  const toggleLeaderboard = useCallback(() => {
+    setLeaderboardOpen((prev) => !prev);
+  }, []);
 
   const callbacks: LeaderboardCallbacks = useMemo(
     () => ({
       onScoreSubmit: (score: number, diff: DifficultyKey) => {
-        service.submitScore(score, diff).catch((err: unknown) => {
-          // biome-ignore lint/suspicious/noConsole: operational warning for failed score submission
-          console.warn('[leaderboard] score submit failed:', err);
-        });
+        service
+          .submitScore(score, diff)
+          .then(() => {
+            queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+          })
+          .catch((err: unknown) => {
+            // biome-ignore lint/suspicious/noConsole: operational warning for failed score submission
+            console.warn('[leaderboard] score submit failed:', err);
+          });
       },
       onNicknameSet: (name: string) => {
-        service
-          .registerNickname(name)
-          .then(() => setNickname(name))
-          .catch((err: unknown) => {
-            // biome-ignore lint/suspicious/noConsole: operational warning for failed registration
-            console.warn('[leaderboard] nickname registration failed:', err);
-          });
+        setNickname(name);
+        service.registerNickname(name).catch((err: unknown) => {
+          // biome-ignore lint/suspicious/noConsole: operational warning for failed registration
+          console.warn('[leaderboard] nickname registration failed:', err);
+        });
       },
       onNicknameCheck: (name: string) => service.checkNickname(name),
     }),
-    [service, setNickname],
+    [service, setNickname, queryClient],
   );
 
   return (
-    <FlappyNatureGame
-      showFps
-      leaderboard={leaderboardData}
-      leaderboardCallbacks={callbacks}
-      nickname={nickname}
-    />
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <div style={{ position: 'relative', zIndex: Z_INDEX.base, display: 'inline-block' }}>
+        <FlappyNatureGame
+          showFps
+          leaderboardCallbacks={callbacks}
+          nickname={nickname}
+          onDifficultyChange={setDifficulty}
+        />
+      </div>
+      <LeaderboardTab
+        visible
+        expanded={leaderboardOpen}
+        onClick={toggleLeaderboard}
+        connectionStatus={connectionStatus}
+        style={{
+          right: 'auto',
+          left: '100%',
+          borderRadius: `0 ${RADIUS.lg} ${RADIUS.lg} 0`,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          left: '100%',
+          top: 0,
+          bottom: 0,
+          width: '220px',
+          overflow: 'hidden',
+          pointerEvents: leaderboardOpen ? 'auto' : 'none',
+        }}
+      >
+        <LeaderboardSidebar
+          visible={leaderboardOpen}
+          entries={entries ?? []}
+          playerEntry={playerEntry}
+          isLoading={isLoading}
+          difficulty={difficulty}
+          connectionStatus={connectionStatus}
+        />
+      </div>
+    </div>
   );
 }

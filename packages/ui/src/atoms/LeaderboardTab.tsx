@@ -8,6 +8,7 @@ import {
   Z_INDEX,
   cssVar,
 } from '@repo/types';
+import type React from 'react';
 
 /** Props for {@link LeaderboardTab}. */
 export interface LeaderboardTabProps {
@@ -21,6 +22,8 @@ export interface LeaderboardTabProps {
   connectionStatus: LeaderboardConnectionStatus;
   /** Whether a new score was just submitted. */
   hasNewScore?: boolean;
+  /** Optional style overrides merged onto the root element. */
+  style?: React.CSSProperties;
 }
 
 const CONNECTION_DOT_COLORS: Record<LeaderboardConnectionStatus, string> = {
@@ -37,6 +40,7 @@ export function LeaderboardTab({
   onClick,
   connectionStatus,
   hasNewScore,
+  style: styleOverride,
 }: LeaderboardTabProps) {
   if (!visible) return null;
 
@@ -63,6 +67,7 @@ export function LeaderboardTab({
         transition: 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         opacity: expanded ? 0.8 : 1,
         zIndex: Z_INDEX.tab,
+        ...styleOverride,
       }}
     >
       <span

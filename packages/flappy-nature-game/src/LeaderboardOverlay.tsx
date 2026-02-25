@@ -1,5 +1,5 @@
 import type { DifficultyKey, LeaderboardData } from '@repo/types';
-import { LeaderboardPanel, LeaderboardTab, NicknameModal } from '@repo/ui';
+import { LeaderboardPanel, LeaderboardTab } from '@repo/ui';
 import type { LeaderboardState } from './useLeaderboardState.js';
 
 interface LeaderboardOverlayProps {
@@ -8,7 +8,7 @@ interface LeaderboardOverlayProps {
   difficulty: DifficultyKey;
 }
 
-/** Renders the leaderboard tab, panel, and nickname modal. */
+/** Renders the leaderboard tab and panel overlay. */
 export function LeaderboardOverlay({ leaderboard, lb, difficulty }: LeaderboardOverlayProps) {
   return (
     <>
@@ -25,15 +25,6 @@ export function LeaderboardOverlay({ leaderboard, lb, difficulty }: LeaderboardO
         isLoading={leaderboard.isLoading}
         onClose={lb.closeLeaderboard}
         difficulty={difficulty}
-      />
-      <NicknameModal
-        visible={lb.showNicknameModal}
-        value={lb.nicknameValue}
-        onChange={lb.handleNicknameChange}
-        onSubmit={lb.handleNicknameSubmit}
-        onClose={lb.closeNicknameModal}
-        error={lb.nicknameError}
-        checking={lb.nicknameChecking}
       />
     </>
   );

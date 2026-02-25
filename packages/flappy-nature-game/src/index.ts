@@ -4,6 +4,12 @@ export { CanvasStage } from './CanvasStage.js';
 // Re-export GamePage so apps/web can use it without violating dependency rules
 export { GamePage } from '@repo/ui';
 
+// Re-export leaderboard UI components for external rendering
+export { LeaderboardSidebar } from '@repo/ui';
+export type { LeaderboardSidebarProps } from '@repo/ui';
+export { LeaderboardTab } from '@repo/ui';
+export type { LeaderboardTabProps } from '@repo/ui';
+
 // Re-export design tokens for consumer convenience
 export {
   DESIGN_TOKENS,

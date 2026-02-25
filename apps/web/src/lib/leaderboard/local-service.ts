@@ -88,10 +88,28 @@ export class LocalLeaderboardService implements LeaderboardService {
   }
 
   subscribeToScores(
-    _difficulty: DifficultyKey,
-    _onUpdate: (entries: LeaderboardEntry[]) => void,
+    difficulty: DifficultyKey,
+    onUpdate: (entries: LeaderboardEntry[]) => void,
   ): () => void {
-    return () => {};
+    const handler = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY) return;
+      const scores = readScores()
+        .filter((s) => s.difficulty === difficulty)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 25);
+      onUpdate(
+        scores.map((s, i) => ({
+          id: `local-${s.nickname}-${s.difficulty}`,
+          nickname: s.nickname,
+          score: s.score,
+          difficulty: s.difficulty,
+          createdAt: s.createdAt,
+          rank: i + 1,
+        })),
+      );
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
   }
 
   async getNickname(): Promise<string | null> {

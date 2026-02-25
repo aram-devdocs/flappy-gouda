@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const NICKNAME_KEY = 'sn-flappy-nickname';
 
@@ -18,6 +18,20 @@ export function useNickname(): UseNicknameReturn {
       return null;
     }
   });
+
+  // Sync nickname across tabs via storage event
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key !== NICKNAME_KEY) return;
+      try {
+        setNicknameState(e.newValue ? (JSON.parse(e.newValue) as string) : null);
+      } catch {
+        setNicknameState(null);
+      }
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
 
   const setNickname = useCallback((value: string) => {
     setNicknameState(value);

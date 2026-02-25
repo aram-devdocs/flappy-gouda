@@ -1,5 +1,6 @@
 /** Z-index levels. */
 export const Z_INDEX = {
+  base: 0,
   overlay: 2,
   tab: 3,
   modal: 5,

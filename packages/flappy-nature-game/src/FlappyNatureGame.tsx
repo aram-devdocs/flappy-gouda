@@ -7,6 +7,7 @@ import {
   GameHeader,
   GameLayout,
   GameOverScreen,
+  NicknameModal,
   ScoreMigrationModal,
   TitleScreen,
 } from '@repo/ui';
@@ -15,7 +16,6 @@ import { GameErrorBoundary } from './GameErrorBoundary.js';
 import { LeaderboardOverlay } from './LeaderboardOverlay.js';
 import { useLeaderboardState } from './useLeaderboardState.js';
 
-/** Top-level game component that wires engine, hooks, and UI together. */
 export function FlappyNatureGame({
   colors,
   bannerTexts,
@@ -24,6 +24,7 @@ export function FlappyNatureGame({
   onStateChange,
   onScoreChange,
   onBestScoreChange,
+  onDifficultyChange,
   className,
   showFps = false,
   leaderboard,
@@ -63,11 +64,15 @@ export function FlappyNatureGame({
   useEffect(() => {
     onBestScoreChange?.(bestScores);
   }, [bestScores, onBestScoreChange]);
+  useEffect(() => {
+    onDifficultyChange?.(difficulty);
+  }, [difficulty, onDifficultyChange]);
 
   const handleFlap = useCallback(() => {
-    if (pickerOpen || lb.leaderboardOpen) return;
+    if (pickerOpen) return;
+    if (lb.leaderboardOpen) lb.closeLeaderboard();
     flap();
-  }, [flap, pickerOpen, lb.leaderboardOpen]);
+  }, [flap, pickerOpen, lb]);
 
   const handleEscape = useCallback(() => {
     if (lb.leaderboardOpen) {
@@ -140,6 +145,7 @@ export function FlappyNatureGame({
   const isOverlayVisible =
     state !== 'play' || pickerOpen || migration.showModal || lb.leaderboardOpen;
   const hasLeaderboard = !!leaderboard;
+  const hasCallbacks = !!leaderboardCallbacks;
 
   return (
     <GameErrorBoundary>
@@ -175,6 +181,17 @@ export function FlappyNatureGame({
         />
         {hasLeaderboard && (
           <LeaderboardOverlay leaderboard={leaderboard} lb={lb} difficulty={difficulty} />
+        )}
+        {hasCallbacks && (
+          <NicknameModal
+            visible={lb.showNicknameModal}
+            value={lb.nicknameValue}
+            onChange={lb.handleNicknameChange}
+            onSubmit={lb.handleNicknameSubmit}
+            onClose={lb.closeNicknameModal}
+            error={lb.nicknameError}
+            checking={lb.nicknameChecking}
+          />
         )}
       </GameLayout>
     </GameErrorBoundary>

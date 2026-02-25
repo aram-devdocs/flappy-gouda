@@ -34,8 +34,8 @@ $SUPABASE_CMD start 2>/dev/null || true
 # Parse status
 STATUS_JSON=$($SUPABASE_CMD status --output json 2>/dev/null || echo '{}')
 
-API_URL=$(echo "$STATUS_JSON" | grep -o '"API URL": *"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//' || echo "")
-ANON_KEY=$(echo "$STATUS_JSON" | grep -o '"anon key": *"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//' || echo "")
+API_URL=$(echo "$STATUS_JSON" | grep -o '"API_URL": *"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//' || echo "")
+ANON_KEY=$(echo "$STATUS_JSON" | grep -o '"ANON_KEY": *"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//' || echo "")
 
 if [[ -z "$API_URL" || -z "$ANON_KEY" ]]; then
   echo "[supabase-dev] Could not parse Supabase status. Check 'supabase status' manually."

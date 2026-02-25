@@ -16,22 +16,17 @@ export function useLeaderboardRealtime(difficulty: DifficultyKey) {
   );
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setStatus('disconnected');
-      return;
-    }
-
-    setStatus('connecting');
+    setStatus(isSupabaseConfigured ? 'connecting' : 'disconnected');
 
     const unsubscribe = service.subscribeToScores(difficulty, (entries: LeaderboardEntry[]) => {
       queryClient.setQueryData(['leaderboard', difficulty], entries);
     });
 
     // Mark connected after a short delay (Supabase channel subscription is async)
-    const timer = setTimeout(() => setStatus('connected'), 1000);
+    const timer = isSupabaseConfigured ? setTimeout(() => setStatus('connected'), 1000) : undefined;
 
     return () => {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
       unsubscribe();
       setStatus('disconnected');
     };
