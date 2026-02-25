@@ -62,37 +62,47 @@ describe('FlappyGoudaGame', () => {
     expect(screen.getByText('Best: 10')).toBeDefined();
   });
 
-  it('opens difficulty picker when badge is clicked', () => {
+  it('opens settings menu when badge is clicked', () => {
     render(<FlappyGoudaGame />);
     fireEvent.click(screen.getByRole('button', { name: /Difficulty/ }));
     expect(mockPause).toHaveBeenCalledOnce();
-    expect(screen.getByLabelText('Select difficulty')).toBeDefined();
+    expect(screen.getByLabelText('Settings')).toBeDefined();
   });
 
-  it('closes picker and resumes when badge clicked again', () => {
+  it('closes settings menu and resumes when badge clicked again', () => {
     render(<FlappyGoudaGame />);
-    // Open picker
+    // Open settings menu
     fireEvent.click(screen.getByRole('button', { name: /Difficulty/ }));
     // Click badge again to close
     fireEvent.click(screen.getByRole('button', { name: /Difficulty/ }));
     expect(mockResume).toHaveBeenCalled();
   });
 
+  it('opens difficulty picker from settings menu', () => {
+    render(<FlappyGoudaGame />);
+    // Open settings menu
+    fireEvent.click(screen.getByRole('button', { name: /Difficulty/ }));
+    // Click "Difficulty" in settings menu
+    fireEvent.click(screen.getByText('Difficulty'));
+    expect(screen.getByLabelText('Select difficulty')).toBeDefined();
+  });
+
   it('selects difficulty and closes picker', () => {
     render(<FlappyGoudaGame />);
-    // Open picker
+    // Open settings menu then difficulty picker
     fireEvent.click(screen.getByRole('button', { name: /Difficulty/ }));
+    fireEvent.click(screen.getByText('Difficulty'));
     // Select "Easy"
     fireEvent.click(screen.getByText('Easy'));
     expect(mockSetDifficulty).toHaveBeenCalledWith('easy');
   });
 
-  it('closes picker on backdrop click and resumes', () => {
+  it('closes settings menu on backdrop click and resumes', () => {
     render(<FlappyGoudaGame />);
-    // Open picker
+    // Open settings menu
     fireEvent.click(screen.getByRole('button', { name: /Difficulty/ }));
     // Click backdrop
-    fireEvent.click(screen.getByLabelText('Select difficulty'));
+    fireEvent.click(screen.getByLabelText('Settings'));
     expect(mockResume).toHaveBeenCalled();
   });
 

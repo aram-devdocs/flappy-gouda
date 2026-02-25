@@ -31,7 +31,7 @@ const TRANSITION = 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
 export function GameWithLeaderboard() {
   const service = useLeaderboardService();
   const queryClient = useQueryClient();
-  const { nickname, setNickname } = useNickname();
+  const { nickname, setNickname, clearNickname } = useNickname();
   const breakpoint = useBreakpoint();
   const [difficulty, setDifficulty] = useState<DifficultyKey>('normal');
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -140,8 +140,9 @@ export function GameWithLeaderboard() {
         });
       },
       onNicknameCheck: (name: string) => service.checkNickname(name),
+      onNicknameClear: clearNickname,
     }),
-    [service, setNickname, queryClient],
+    [service, setNickname, clearNickname, queryClient],
   );
 
   const panelWidth = breakpoint === 'tablet' ? '180px' : '220px';

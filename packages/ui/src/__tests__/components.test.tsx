@@ -7,6 +7,7 @@ import { GameFooter } from '../atoms/GameFooter';
 import { ScoreDisplay } from '../atoms/ScoreDisplay';
 import { DifficultyBadge } from '../molecules/DifficultyBadge';
 import { DifficultyPicker } from '../molecules/DifficultyPicker';
+import { SettingsMenu } from '../molecules/SettingsMenu';
 import { ErrorFallback } from '../organisms/ErrorFallback';
 import { GameContainer } from '../organisms/GameContainer';
 import { GameHeader } from '../organisms/GameHeader';
@@ -226,6 +227,68 @@ describe('DifficultyPicker', () => {
   });
 });
 
+describe('SettingsMenu', () => {
+  const defaultProps = {
+    nickname: 'ABC',
+    onDifficultyClick: vi.fn(),
+    onNicknameClear: vi.fn(),
+    onClose: vi.fn(),
+  };
+
+  it('renders both menu options when visible', () => {
+    render(<SettingsMenu {...defaultProps} visible />);
+    expect(screen.getByText('Difficulty')).toBeDefined();
+    expect(screen.getByText('Reset Nickname')).toBeDefined();
+  });
+
+  it('returns null when visible is false', () => {
+    const { container } = render(<SettingsMenu {...defaultProps} visible={false} />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('calls onDifficultyClick when Difficulty is clicked', () => {
+    const onDifficultyClick = vi.fn();
+    render(<SettingsMenu {...defaultProps} onDifficultyClick={onDifficultyClick} visible />);
+    fireEvent.click(screen.getByText('Difficulty'));
+    expect(onDifficultyClick).toHaveBeenCalledOnce();
+  });
+
+  it('calls onNicknameClear when Reset Nickname is clicked', () => {
+    const onNicknameClear = vi.fn();
+    render(<SettingsMenu {...defaultProps} onNicknameClear={onNicknameClear} visible />);
+    fireEvent.click(screen.getByText('Reset Nickname'));
+    expect(onNicknameClear).toHaveBeenCalledOnce();
+  });
+
+  it('disables Reset Nickname when nickname is null', () => {
+    render(<SettingsMenu {...defaultProps} nickname={null} visible />);
+    const btn = screen.getByText('Reset Nickname');
+    expect(btn).toHaveProperty('disabled', true);
+  });
+
+  it('calls onClose when backdrop is clicked', () => {
+    const onClose = vi.fn();
+    render(<SettingsMenu {...defaultProps} onClose={onClose} visible />);
+    fireEvent.click(screen.getByLabelText('Settings'));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('calls onClose on Escape key', () => {
+    const onClose = vi.fn();
+    render(<SettingsMenu {...defaultProps} onClose={onClose} visible />);
+    fireEvent.keyDown(screen.getByLabelText('Settings'), { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('stops propagation of keyDown in inner panel', () => {
+    const onClose = vi.fn();
+    render(<SettingsMenu {...defaultProps} onClose={onClose} visible />);
+    const panel = screen.getByRole('menu');
+    fireEvent.keyDown(panel, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
 describe('GameContainer', () => {
   it('renders children', () => {
     render(
@@ -331,6 +394,22 @@ describe('GameHeader', () => {
     render(<GameHeader {...defaultProps} onDifficultyClick={onDifficultyClick} />);
     fireEvent.click(screen.getByRole('button', { name: 'Difficulty: Normal' }));
     expect(onDifficultyClick).toHaveBeenCalledOnce();
+  });
+
+  it('renders nickname when provided', () => {
+    render(<GameHeader {...defaultProps} nickname="ABC" />);
+    expect(screen.getByText('ABC')).toBeDefined();
+  });
+
+  it('does not render nickname when null', () => {
+    render(<GameHeader {...defaultProps} nickname={null} />);
+    expect(screen.queryByText('ABC')).toBeNull();
+  });
+
+  it('does not render nickname when omitted', () => {
+    render(<GameHeader {...defaultProps} />);
+    // Only brand, difficulty badge, and best score should be present
+    expect(screen.queryByText('ABC')).toBeNull();
   });
 });
 
