@@ -49,11 +49,12 @@ export function GameWithLeaderboard() {
     () => ({
       topCount: 3,
       surroundCount: breakpoint === 'mobile' ? 1 : breakpoint === 'tablet' ? 2 : 3,
+      showAllThreshold: 20,
     }),
     [breakpoint],
   );
 
-  const { data: entries, isLoading } = useLeaderboard(difficulty, windowConfig.surroundCount);
+  const { data: entries, isLoading } = useLeaderboard(difficulty);
   const { status: connectionStatus } = useLeaderboardRealtime(difficulty);
   const liveScores = useLiveScores(difficulty);
 

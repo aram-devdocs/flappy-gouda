@@ -12,5 +12,5 @@ export const ScoreSubmitSchema = z.object({
 
 export const LeaderboardQuerySchema = z.object({
   difficulty: z.enum(['easy', 'normal', 'hard']),
-  limit: z.number().int().min(1).max(100).default(25),
+  limit: z.number().int().min(1).max(100).default(100),
 });
