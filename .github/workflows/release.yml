@@ -3,6 +3,11 @@ name: Release & Publish
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag to publish (e.g., flappy-nature-game-v0.2.0)"
+        required: true
 
 permissions:
   contents: write
@@ -13,9 +18,10 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-      version: ${{ steps.release.outputs.version }}
+      release_created: ${{ steps.release.outputs['flappy-nature-game--release_created'] }}
+      tag_name: ${{ steps.release.outputs['flappy-nature-game--tag_name'] }}
+      version: ${{ steps.release.outputs['flappy-nature-game--version'] }}
+      prs_created: ${{ steps.release.outputs.prs_created }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -23,15 +29,48 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
+  format-release-pr:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.prs_created == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release-please--branches--main--components--flappy-nature-game
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm format
+
+      - name: Push formatting fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "chore: auto-format release PR with biome"
+            git push
+          else
+            echo "No formatting changes needed"
+          fi
+
   publish:
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    if: >-
+      needs.release-please.outputs.release_created == 'true' ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: npm
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
+          ref: ${{ needs.release-please.outputs.tag_name || github.event.inputs.tag_name }}
 
       - uses: pnpm/action-setup@v4
 
