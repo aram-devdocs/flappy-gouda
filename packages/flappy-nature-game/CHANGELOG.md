@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/aram-devdocs/flappy-nature/compare/flappy-nature-game-v0.2.0...flappy-nature-game-v0.2.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* **dx:** make tsup noExternal conditional on production builds ([dfe7ecb](https://github.com/aram-devdocs/flappy-nature/commit/dfe7ecbd57e05241bf29a9040afc59d205a3def0))
+
 ## [0.2.0](https://github.com/aram-devdocs/flappy-nature/compare/flappy-nature-game-v0.1.0...flappy-nature-game-v0.2.0) (2026-02-25)
 
 
