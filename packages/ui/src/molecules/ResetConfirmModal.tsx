@@ -6,6 +6,7 @@ import {
   RGBA_TOKENS,
   SHADOW,
   SPACING,
+  STATUS_COLORS,
   Z_INDEX,
   cssVar,
 } from '@repo/types';
@@ -95,7 +96,7 @@ const confirmBtnStyle: React.CSSProperties = {
   padding: `${SPACING[2]} ${SPACING[5]}`,
   borderRadius: RADIUS.lg,
   border: 'none',
-  background: '#d9534f',
+  background: STATUS_COLORS.error,
   color: cssVar('white'),
   fontWeight: FONT_WEIGHT.bold,
   fontSize: FONT_SIZE.xl,
