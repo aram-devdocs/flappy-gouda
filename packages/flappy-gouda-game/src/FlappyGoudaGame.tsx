@@ -8,12 +8,14 @@ import {
   GameLayout,
   GameOverScreen,
   NicknameModal,
+  SettingsMenu,
   TitleScreen,
 } from '@repo/ui';
 import { useEffect, useState } from 'react';
 import { GameErrorBoundary } from './GameErrorBoundary';
 import { LeaderboardOverlay } from './LeaderboardOverlay';
 import { useDebugBridge } from './useDebugBridge';
+import type { SettingsView } from './useGameCallbacks';
 import { useGameCallbacks } from './useGameCallbacks';
 import { useLeaderboardState } from './useLeaderboardState';
 
@@ -58,7 +60,7 @@ export function FlappyGoudaGame({
   });
 
   useDebugBridge(engineRef, engineReady, showDebug, onDebugMetrics, debugControlsRef);
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [settingsView, setSettingsView] = useState<SettingsView>('closed');
   const lb = useLeaderboardState(state, score, difficulty, nickname, leaderboardCallbacks);
 
   useEffect(() => {
@@ -77,11 +79,13 @@ export function FlappyGoudaGame({
   const {
     handleFlap,
     handleEscape,
-    togglePicker,
+    toggleSettings,
     onCanvasInteract,
     onCanvasHover,
     handleDifficultySelect,
-    handlePickerClose,
+    handleSettingsClose,
+    openDifficultyFromMenu,
+    handleNicknameClear,
     handlePlay,
   } = useGameCallbacks({
     flap,
@@ -91,8 +95,9 @@ export function FlappyGoudaGame({
     handleCanvasClick,
     handleCanvasHover,
     canvasRef,
-    pickerOpen,
-    setPickerOpen,
+    settingsView,
+    setSettingsView,
+    onNicknameClear: leaderboardCallbacks?.onNicknameClear,
   });
 
   useGameInput({
@@ -101,11 +106,11 @@ export function FlappyGoudaGame({
     onCanvasInteract,
     onCanvasHover,
     canvasRef,
-    enabled: !pickerOpen,
+    enabled: settingsView === 'closed',
   });
 
   const currentBest = bestScores[difficulty] ?? 0;
-  const isOverlayVisible = state !== 'play' || pickerOpen;
+  const isOverlayVisible = state !== 'play' || settingsView !== 'closed';
   const hasLeaderboard = !!leaderboard;
   const hasCallbacks = !!leaderboardCallbacks;
 
@@ -119,7 +124,8 @@ export function FlappyGoudaGame({
             difficulty={difficulty}
             bestScore={currentBest}
             difficultyVisible={state !== 'idle'}
-            onDifficultyClick={togglePicker}
+            onDifficultyClick={toggleSettings}
+            nickname={nickname ?? null}
           />
         }
         footer={null}
@@ -128,12 +134,19 @@ export function FlappyGoudaGame({
         <FpsCounter fps={fps} visible={showFps} />
         <TitleScreen visible={state === 'idle'} bestScore={currentBest} onPlay={handlePlay} />
         <GameOverScreen visible={state === 'dead'} score={score} bestScore={currentBest} />
+        <SettingsMenu
+          visible={settingsView === 'menu'}
+          nickname={nickname ?? null}
+          onDifficultyClick={openDifficultyFromMenu}
+          onNicknameClear={handleNicknameClear}
+          onClose={handleSettingsClose}
+        />
         <DifficultyPicker
           currentDifficulty={difficulty}
           bestScores={bestScores}
-          visible={pickerOpen}
+          visible={settingsView === 'difficulty'}
           onSelect={handleDifficultySelect}
-          onClose={handlePickerClose}
+          onClose={handleSettingsClose}
         />
         {hasLeaderboard && !leaderboardExpanded && (
           <LeaderboardOverlay leaderboard={leaderboard} gameState={state} />

@@ -1,6 +1,9 @@
 import type { DifficultyKey } from '@repo/types';
 import { useCallback } from 'react';
 
+/** Which settings panel is currently shown. */
+export type SettingsView = 'closed' | 'menu' | 'difficulty';
+
 interface GameCallbackDeps {
   flap: () => void;
   pause: () => void;
@@ -9,8 +12,9 @@ interface GameCallbackDeps {
   handleCanvasClick: (x: number, y: number) => boolean;
   handleCanvasHover: (x: number, y: number) => boolean;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
-  pickerOpen: boolean;
-  setPickerOpen: (open: boolean) => void;
+  settingsView: SettingsView;
+  setSettingsView: (view: SettingsView) => void;
+  onNicknameClear?: () => void;
 }
 
 export function useGameCallbacks(deps: GameCallbackDeps) {
@@ -22,41 +26,44 @@ export function useGameCallbacks(deps: GameCallbackDeps) {
     handleCanvasClick,
     handleCanvasHover,
     canvasRef,
-    pickerOpen,
-    setPickerOpen,
+    settingsView,
+    setSettingsView,
+    onNicknameClear,
   } = deps;
 
   const handleFlap = useCallback(() => {
-    if (pickerOpen) return;
+    if (settingsView !== 'closed') return;
     flap();
-  }, [flap, pickerOpen]);
+  }, [flap, settingsView]);
 
   const handleEscape = useCallback(() => {
-    if (pickerOpen) {
-      setPickerOpen(false);
+    if (settingsView === 'difficulty') {
+      setSettingsView('menu');
+    } else if (settingsView === 'menu') {
+      setSettingsView('closed');
       resume();
     }
-  }, [pickerOpen, resume, setPickerOpen]);
+  }, [settingsView, resume, setSettingsView]);
 
-  const togglePicker = useCallback(() => {
-    if (pickerOpen) {
-      setPickerOpen(false);
+  const toggleSettings = useCallback(() => {
+    if (settingsView !== 'closed') {
+      setSettingsView('closed');
       resume();
     } else {
       pause();
-      setPickerOpen(true);
+      setSettingsView('menu');
     }
-  }, [pickerOpen, pause, resume, setPickerOpen]);
+  }, [settingsView, pause, resume, setSettingsView]);
 
   const onCanvasInteract = useCallback(
     (x: number, y: number): boolean => {
       if (handleCanvasClick(x, y)) {
-        togglePicker();
+        toggleSettings();
         return true;
       }
       return false;
     },
-    [handleCanvasClick, togglePicker],
+    [handleCanvasClick, toggleSettings],
   );
 
   const onCanvasHover = useCallback(
@@ -71,15 +78,25 @@ export function useGameCallbacks(deps: GameCallbackDeps) {
   const handleDifficultySelect = useCallback(
     (key: DifficultyKey) => {
       setDifficulty(key);
-      setPickerOpen(false);
+      setSettingsView('closed');
     },
-    [setDifficulty, setPickerOpen],
+    [setDifficulty, setSettingsView],
   );
 
-  const handlePickerClose = useCallback(() => {
-    setPickerOpen(false);
+  const handleSettingsClose = useCallback(() => {
+    setSettingsView('closed');
     resume();
-  }, [resume, setPickerOpen]);
+  }, [resume, setSettingsView]);
+
+  const openDifficultyFromMenu = useCallback(() => {
+    setSettingsView('difficulty');
+  }, [setSettingsView]);
+
+  const handleNicknameClear = useCallback(() => {
+    onNicknameClear?.();
+    setSettingsView('closed');
+    resume();
+  }, [onNicknameClear, setSettingsView, resume]);
 
   const handlePlay = useCallback(() => {
     flap();
@@ -88,11 +105,13 @@ export function useGameCallbacks(deps: GameCallbackDeps) {
   return {
     handleFlap,
     handleEscape,
-    togglePicker,
+    toggleSettings,
     onCanvasInteract,
     onCanvasHover,
     handleDifficultySelect,
-    handlePickerClose,
+    handleSettingsClose,
+    openDifficultyFromMenu,
+    handleNicknameClear,
     handlePlay,
   };
 }

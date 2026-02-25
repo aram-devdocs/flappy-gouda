@@ -53,6 +53,8 @@ export interface LeaderboardCallbacks {
   onNicknameSet: (nickname: string) => void;
   /** Called to check if a nickname is available. */
   onNicknameCheck: (nickname: string) => Promise<NicknameCheckResult>;
+  /** Called when the player clears their nickname from settings. */
+  onNicknameClear?: () => void;
 }
 
 /** Separator marker between non-contiguous leaderboard regions. */

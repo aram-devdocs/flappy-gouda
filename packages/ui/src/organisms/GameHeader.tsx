@@ -15,6 +15,8 @@ export interface GameHeaderProps {
   difficultyVisible: boolean;
   /** Called when the difficulty badge is clicked. */
   onDifficultyClick: () => void;
+  /** Player's current nickname. Shown next to the best score. */
+  nickname?: string | null;
 }
 
 /** Header bar with cheese icon, optional brand text, difficulty badge, and best score. */
@@ -24,6 +26,7 @@ export function GameHeader({
   bestScore,
   difficultyVisible,
   onDifficultyClick,
+  nickname,
 }: GameHeaderProps) {
   return (
     <div
@@ -52,17 +55,29 @@ export function GameHeader({
         visible={difficultyVisible}
         onClick={onDifficultyClick}
       />
-      <span
-        style={{
-          marginLeft: 'auto',
-          fontSize: FONT_SIZE.sm,
-          fontWeight: FONT_WEIGHT.semibold,
-          color: cssVar('navy'),
-          opacity: bestScore > 0 ? OPACITY.prominent : OPACITY.hidden,
-        }}
-      >
-        {bestScore > 0 ? `Best: ${bestScore}` : ''}
-      </span>
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: SPACING[2] }}>
+        {nickname && (
+          <span
+            style={{
+              fontSize: FONT_SIZE['2xs'],
+              fontWeight: FONT_WEIGHT.semibold,
+              color: cssVar('violet'),
+            }}
+          >
+            {nickname}
+          </span>
+        )}
+        <span
+          style={{
+            fontSize: FONT_SIZE.sm,
+            fontWeight: FONT_WEIGHT.semibold,
+            color: cssVar('navy'),
+            opacity: bestScore > 0 ? OPACITY.prominent : OPACITY.hidden,
+          }}
+        >
+          {bestScore > 0 ? `Best: ${bestScore}` : ''}
+        </span>
+      </div>
     </div>
   );
 }
