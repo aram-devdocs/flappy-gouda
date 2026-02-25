@@ -47,7 +47,7 @@ export function DemoFooter() {
         style={{
           fontSize: FONT_SIZE['2xs'],
           fontWeight: FONT_WEIGHT.normal,
-          color: COLOR_TOKENS.lightnavy,
+          color: COLOR_TOKENS.navy,
           opacity: OPACITY.subtle,
           letterSpacing: '0.025em',
         }}
@@ -57,7 +57,11 @@ export function DemoFooter() {
           href="https://github.com/aram-devdocs"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: 'inherit', textDecoration: 'underline', fontWeight: FONT_WEIGHT.medium }}
+          style={{
+            color: 'inherit',
+            textDecoration: 'underline',
+            fontWeight: FONT_WEIGHT.semibold,
+          }}
         >
           aramhammoudeh
         </a>
