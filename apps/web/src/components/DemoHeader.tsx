@@ -22,12 +22,25 @@ export function DemoHeader() {
         boxShadow: SHADOW.dropdown,
       }}
     >
-      <img
-        src="/assets/logos/vegan-gouda-games.png"
-        alt="Vegan Gouda Games"
-        height={56}
-        style={{ mixBlendMode: 'multiply' }}
-      />
+      <div
+        style={{
+          height: '64px',
+          width: '200px',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <img
+          src="/assets/logos/vegan-gouda-games.png"
+          alt="Vegan Gouda Games"
+          style={{
+            height: '280px',
+            filter: 'brightness(0) invert(1)',
+          }}
+        />
+      </div>
       <div
         aria-hidden="true"
         style={{

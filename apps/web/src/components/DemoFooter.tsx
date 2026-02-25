@@ -32,13 +32,25 @@ export function DemoFooter() {
           gap: SPACING[1],
         }}
       >
-        <img
-          src="/assets/logos/vegan-gouda-leaf.png"
-          alt="Vegan Gouda Development"
-          width={36}
-          height={36}
-          style={{ mixBlendMode: 'multiply' }}
-        />
+        <div
+          style={{
+            height: '40px',
+            width: '120px',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <img
+            src="/assets/logos/vegan-gouda-leaf.png"
+            alt="Vegan Gouda Development"
+            style={{
+              height: '180px',
+              filter: 'brightness(0) invert(1)',
+            }}
+          />
+        </div>
         <span
           style={{
             fontSize: FONT_SIZE.xs,
