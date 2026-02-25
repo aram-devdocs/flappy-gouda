@@ -41,7 +41,6 @@ export const Default: Story = {
     entries,
     playerEntry,
     isLoading: false,
-    onClose: () => {},
     difficulty: 'normal',
     connectionStatus: 'connected',
   },

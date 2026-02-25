@@ -23,8 +23,6 @@ export interface LeaderboardBottomSheetProps {
   playerEntry: LeaderboardEntry | null;
   /** Whether leaderboard data is loading. */
   isLoading: boolean;
-  /** Called when the close button is tapped. */
-  onClose: () => void;
   /** Current difficulty filter. */
   difficulty: DifficultyKey;
   /** Real-time connection status. */
@@ -44,7 +42,6 @@ export function LeaderboardBottomSheet({
   entries,
   playerEntry,
   isLoading,
-  onClose,
   difficulty,
   connectionStatus,
 }: LeaderboardBottomSheetProps) {
@@ -79,7 +76,6 @@ export function LeaderboardBottomSheet({
           display: 'flex',
           justifyContent: 'center',
           padding: `${SPACING[1.5]} 0 0`,
-          pointerEvents: 'auto',
         }}
       >
         <div
@@ -100,7 +96,6 @@ export function LeaderboardBottomSheet({
           justifyContent: 'space-between',
           padding: `${SPACING[1.5]} ${SPACING[3]}`,
           flexShrink: 0,
-          pointerEvents: 'auto',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: SPACING[2] }}>
@@ -124,29 +119,10 @@ export function LeaderboardBottomSheet({
             }}
           />
         </div>
-        <button
-          type="button"
-          aria-label="Close leaderboard"
-          onClick={onClose}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: FONT_SIZE.xl,
-            color: cssVar('navy'),
-            opacity: OPACITY.soft,
-            padding: SPACING[0.5],
-            lineHeight: 1,
-          }}
-        >
-          ✕
-        </button>
       </div>
 
       {/* Body */}
-      <div
-        style={{ flex: 1, overflowY: 'auto', padding: `0 ${SPACING[1]}`, pointerEvents: 'auto' }}
-      >
+      <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${SPACING[1]}` }}>
         {isLoading && <p style={emptyStyle}>Loading...</p>}
         {!isLoading && entries.length === 0 && <p style={emptyStyle}>No scores yet</p>}
         {!isLoading &&
@@ -166,7 +142,6 @@ export function LeaderboardBottomSheet({
             borderTop: `1px solid ${RGBA_TOKENS.shadowSm}`,
             padding: SPACING[1],
             flexShrink: 0,
-            pointerEvents: 'auto',
           }}
         >
           <LeaderboardEntryRow entry={playerEntry} isPlayer isNew={false} />

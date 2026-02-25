@@ -98,7 +98,6 @@ export function GameWithLeaderboard() {
           entries={entries ?? []}
           playerEntry={playerEntry}
           isLoading={isLoading}
-          onClose={closeSheet}
           difficulty={difficulty}
           connectionStatus={connectionStatus}
         />
