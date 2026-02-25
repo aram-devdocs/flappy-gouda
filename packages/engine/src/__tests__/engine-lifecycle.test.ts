@@ -1,10 +1,10 @@
 import type { Bird, GameConfig } from '@repo/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_CONFIG } from '../config.js';
-import { EngineEventEmitter } from '../engine-events.js';
-import { resetEngine, syncPrevBird } from '../engine-lifecycle.js';
-import { EngineLoop } from '../engine-loop.js';
-import { EngineState } from '../engine-state.js';
+import { DEFAULT_CONFIG } from '../config';
+import { EngineEventEmitter } from '../engine-events';
+import { resetEngine, syncPrevBird } from '../engine-lifecycle';
+import { EngineLoop } from '../engine-loop';
+import { EngineState } from '../engine-state';
 
 vi.mock('../persistence.js', () => ({
   saveBestScores: vi.fn(),

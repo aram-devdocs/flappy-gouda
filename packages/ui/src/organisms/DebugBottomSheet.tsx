@@ -10,7 +10,7 @@ import {
   Z_INDEX,
   cssVar,
 } from '@repo/types';
-import { DebugSparkline } from '../atoms/DebugSparkline.js';
+import { DebugSparkline } from '../atoms/DebugSparkline';
 
 /** Props for {@link DebugBottomSheet}. */
 export interface DebugBottomSheetProps {

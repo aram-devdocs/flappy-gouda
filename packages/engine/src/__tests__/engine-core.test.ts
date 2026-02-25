@@ -1,15 +1,15 @@
 import type { Bird, GameColors, GameConfig } from '@repo/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_BANNERS } from '../banners.js';
-import { DEFAULT_COLORS, buildFontCache } from '../cache.js';
-import { BASE_H, BASE_W, DEFAULT_CONFIG } from '../config.js';
-import { EngineEventEmitter } from '../engine-events.js';
-import { syncPrevBird } from '../engine-lifecycle.js';
-import { EngineLoop } from '../engine-loop.js';
-import { createBgSystem, createRenderer, initClouds, setupCanvas } from '../engine-setup.js';
-import { EngineState } from '../engine-state.js';
-import { loadHeartImage } from '../heart.js';
-import { roundRectPath } from '../math.js';
+import { DEFAULT_BANNERS } from '../banners';
+import { DEFAULT_COLORS, buildFontCache } from '../cache';
+import { BASE_H, BASE_W, DEFAULT_CONFIG } from '../config';
+import { EngineEventEmitter } from '../engine-events';
+import { syncPrevBird } from '../engine-lifecycle';
+import { EngineLoop } from '../engine-loop';
+import { createBgSystem, createRenderer, initClouds, setupCanvas } from '../engine-setup';
+import { EngineState } from '../engine-state';
+import { loadHeartImage } from '../heart';
+import { roundRectPath } from '../math';
 
 // Module-level mocks -- vi.mock is hoisted by vitest
 vi.mock('../persistence.js', () => ({

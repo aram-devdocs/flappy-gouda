@@ -1,17 +1,23 @@
 import type { GameColors, Pipe } from '@repo/types';
-import { atIndex } from './assert.js';
-import type { CachedFonts } from './cache.js';
-import { PIPE_LIP } from './config.js';
-import { DEG_TO_RAD, TAU } from './math.js';
-import type { PipeLipCache } from './renderer-prerender.js';
+import { atIndex } from './assert';
+import type { CachedFonts } from './cache';
+import { PIPE_LIP } from './config';
+import { DEG_TO_RAD, TAU } from './math';
+import type { PipeLipCache } from './renderer-prerender';
 
+/** Bounding rectangle for a UI icon in logical (CSS) pixels. */
 export interface IconBounds {
+  /** Left edge x-coordinate. */
   x: number;
+  /** Top edge y-coordinate. */
   y: number;
+  /** Width of the icon. */
   w: number;
+  /** Height of the icon. */
   h: number;
 }
 
+/** Draw the bird sprite (heart image or fallback circle) at the given position with rotation. */
 export function drawBird(
   ctx: CanvasRenderingContext2D,
   y: number,
@@ -39,6 +45,7 @@ export function drawBird(
   ctx.restore();
 }
 
+/** Draw all active pipe pairs (top and bottom columns with lip caps). */
 export function drawPipes(
   ctx: CanvasRenderingContext2D,
   pipes: Pipe[],
@@ -82,6 +89,7 @@ export function drawPipes(
   }
 }
 
+/** Draw the current score centered at the top of the canvas with a drop shadow. */
 export function drawScore(
   ctx: CanvasRenderingContext2D,
   score: number,
@@ -102,10 +110,12 @@ export function drawScore(
 const ICON_SIZE = 22;
 const ICON_PAD = 10;
 
+/** Compute the bounding rectangle for the settings gear icon. */
 export function getSettingsIconBounds(width: number): IconBounds {
   return { x: width - ICON_SIZE - ICON_PAD, y: ICON_PAD, w: ICON_SIZE, h: ICON_SIZE };
 }
 
+/** Draw a gear-shaped settings icon in the top-right corner of the canvas. */
 export function drawSettingsIcon(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -140,6 +150,7 @@ export function drawSettingsIcon(
   ctx.restore();
 }
 
+/** Return true if the given logical coordinates fall within the settings icon bounds. */
 export function hitTestSettingsIcon(logicalX: number, logicalY: number, width: number): boolean {
   const b = getSettingsIconBounds(width);
   return logicalX >= b.x && logicalX <= b.x + b.w && logicalY >= b.y && logicalY <= b.y + b.h;

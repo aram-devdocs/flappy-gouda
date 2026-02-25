@@ -1,7 +1,7 @@
 import type { DebugEntityCounts, DebugFrameSnapshot } from '@repo/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DebugMetricsCollector } from '../debug-metrics.js';
-import { EngineEventEmitter } from '../engine-events.js';
+import { DebugMetricsCollector } from '../debug-metrics';
+import { EngineEventEmitter } from '../engine-events';
 
 // ---------------------------------------------------------------------------
 // Factories

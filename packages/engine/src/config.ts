@@ -1,5 +1,5 @@
 import type { BackgroundConfig, DifficultyKey, DifficultyMap, GameConfig } from '@repo/types';
-import { EngineError } from './errors.js';
+import { EngineError } from './errors';
 
 /** Logical canvas width in pixels (before HiDPI scaling). */
 export const BASE_W = 380;

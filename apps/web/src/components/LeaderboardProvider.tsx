@@ -1,9 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { LocalLeaderboardService, SupabaseLeaderboardService } from '../lib/leaderboard/index.js';
-import type { LeaderboardService } from '../lib/leaderboard/index.js';
-import { isSupabaseConfigured } from '../lib/supabase/client.js';
+import { LocalLeaderboardService, SupabaseLeaderboardService } from '../lib/leaderboard/index';
+import type { LeaderboardService } from '../lib/leaderboard/index';
+import { isSupabaseConfigured } from '../lib/supabase/client';
 
 const ServiceContext = createContext<LeaderboardService | null>(null);
 

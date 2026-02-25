@@ -1,12 +1,12 @@
 import type { Bird, GameConfig, Pipe } from '@repo/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BackgroundSystem } from '../background.js';
-import { DEFAULT_COLORS, buildFontCache } from '../cache.js';
-import { DEFAULT_CONFIG, DIFFICULTY, applyDifficulty } from '../config.js';
-import { EngineError } from '../errors.js';
-import { createLogger } from '../logger.js';
-import { TAU, maxOf } from '../math.js';
-import { loadBestScores, loadDifficulty, saveBestScores, saveDifficulty } from '../persistence.js';
+import { BackgroundSystem } from '../background';
+import { DEFAULT_COLORS, buildFontCache } from '../cache';
+import { DEFAULT_CONFIG, DIFFICULTY, applyDifficulty } from '../config';
+import { EngineError } from '../errors';
+import { createLogger } from '../logger';
+import { TAU, maxOf } from '../math';
+import { loadBestScores, loadDifficulty, saveBestScores, saveDifficulty } from '../persistence';
 import {
   checkGroundCollision,
   checkPipeCollision,
@@ -14,9 +14,9 @@ import {
   spawnPipe,
   updateBird,
   updatePipes,
-} from '../physics.js';
-import { drawBird, drawPipes, drawScore } from '../renderer-entities.js';
-import { generateSkylineSegment } from '../skyline.js';
+} from '../physics';
+import { drawBird, drawPipes, drawScore } from '../renderer-entities';
+import { generateSkylineSegment } from '../skyline';
 
 // --- Factories ---
 

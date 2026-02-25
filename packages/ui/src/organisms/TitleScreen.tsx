@@ -9,7 +9,7 @@ import {
   Z_INDEX,
   cssVar,
 } from '@repo/types';
-import { HeartIcon } from '../atoms/HeartIcon.js';
+import { HeartIcon } from '../atoms/HeartIcon';
 
 /** Props for {@link TitleScreen}. */
 interface TitleScreenProps {

@@ -1,8 +1,8 @@
 import type { BgLayers, BuildingType, Plane } from '@repo/types';
-import { atIndex } from './assert.js';
-import { BG, CLOUD_PARAMS, SKYLINE_CITIES } from './config.js';
-import { maxOf } from './math.js';
-import { generateSkylineSegment } from './skyline.js';
+import { atIndex } from './assert';
+import { BG, CLOUD_PARAMS, SKYLINE_CITIES } from './config';
+import { maxOf } from './math';
+import { generateSkylineSegment } from './skyline';
 
 /** Return a random building type with consistent probability thresholds. */
 export function randomBuildingType(): BuildingType {

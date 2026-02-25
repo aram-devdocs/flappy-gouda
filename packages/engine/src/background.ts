@@ -1,5 +1,5 @@
 import type { BgLayers, Plane } from '@repo/types';
-import { atIndex } from './assert.js';
+import { atIndex } from './assert';
 import {
   computeMaxRight,
   createEmptyLayers,
@@ -11,9 +11,9 @@ import {
   populateSkyline,
   populateTrees,
   randomBuildingType,
-} from './background-init.js';
-import { BG, PLANE_PARAMS, SKYLINE_CITIES } from './config.js';
-import { poolRemove } from './pool.js';
+} from './background-init';
+import { BG, PLANE_PARAMS, SKYLINE_CITIES } from './config';
+import { poolRemove } from './pool';
 
 interface BackgroundDeps {
   width: number;

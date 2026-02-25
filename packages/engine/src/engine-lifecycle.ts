@@ -1,6 +1,6 @@
 import type { Bird, GameConfig } from '@repo/types';
-import type { EngineLoop } from './engine-loop.js';
-import type { EngineState } from './engine-state.js';
+import type { EngineLoop } from './engine-loop';
+import type { EngineState } from './engine-state';
 
 /** Shared reset logic: zero pipes, reset loop timing, sync prevBird, and reset game state. */
 export function resetEngine(

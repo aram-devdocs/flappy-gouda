@@ -1,8 +1,8 @@
 import type { DifficultyKey, LeaderboardConnectionStatus } from '@repo/flappy-nature-game';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useLeaderboardService } from '../components/LeaderboardProvider.js';
-import { isSupabaseConfigured } from '../lib/supabase/client.js';
+import { useLeaderboardService } from '../components/LeaderboardProvider';
+import { isSupabaseConfigured } from '../lib/supabase/client';
 
 export function useLeaderboardRealtime(difficulty: DifficultyKey) {
   const service = useLeaderboardService();

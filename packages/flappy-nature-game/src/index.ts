@@ -1,5 +1,5 @@
-export { FlappyNatureGame } from './FlappyNatureGame.js';
-export { CanvasStage } from './CanvasStage.js';
+export { FlappyNatureGame } from './FlappyNatureGame';
+export { CanvasStage } from './CanvasStage';
 
 // Re-export GamePage so apps/web can use it without violating dependency rules
 export { GamePage } from '@repo/ui';

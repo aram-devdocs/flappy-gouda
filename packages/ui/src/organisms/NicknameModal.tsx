@@ -9,7 +9,7 @@ import {
   Z_INDEX,
   cssVar,
 } from '@repo/types';
-import { NicknameInput } from '../molecules/NicknameInput.js';
+import { NicknameInput } from '../molecules/NicknameInput';
 
 /** Props for {@link NicknameModal}. */
 export interface NicknameModalProps {

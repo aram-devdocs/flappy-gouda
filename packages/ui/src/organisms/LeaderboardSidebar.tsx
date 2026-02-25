@@ -11,7 +11,7 @@ import {
   STATUS_COLORS,
   cssVar,
 } from '@repo/types';
-import { LeaderboardEntryRow } from '../molecules/LeaderboardEntryRow.js';
+import { LeaderboardEntryRow } from '../molecules/LeaderboardEntryRow';
 
 /** Props for {@link LeaderboardSidebar}. */
 export interface LeaderboardSidebarProps {

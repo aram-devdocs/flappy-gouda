@@ -1,7 +1,7 @@
 import type { DifficultyKey } from '@repo/flappy-nature-game';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLeaderboardService } from '../components/LeaderboardProvider.js';
-import type { LiveScoreBroadcast } from '../lib/leaderboard/service.js';
+import { useLeaderboardService } from '../components/LeaderboardProvider';
+import type { LiveScoreBroadcast } from '../lib/leaderboard/service';
 
 const EXPIRY_MS = 10_000;
 const PRUNE_INTERVAL_MS = 5_000;

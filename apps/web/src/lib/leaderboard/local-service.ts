@@ -3,7 +3,7 @@ import type {
   LeaderboardEntry,
   NicknameCheckResult,
 } from '@repo/flappy-nature-game';
-import type { LeaderboardService } from './service.js';
+import type { LeaderboardService } from './service';
 
 const STORAGE_KEY = 'sn-flappy-leaderboard';
 

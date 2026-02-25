@@ -1,7 +1,7 @@
 import type { BestScores, Bird, DifficultyKey, GameConfig, GameState } from '@repo/types';
-import { applyDifficulty } from './config.js';
-import type { EngineEventEmitter } from './engine-events.js';
-import { saveBestScores, saveDifficulty } from './persistence.js';
+import { applyDifficulty } from './config';
+import type { EngineEventEmitter } from './engine-events';
+import { saveBestScores, saveDifficulty } from './persistence';
 
 /** Manages mutable game state (score, difficulty, pause) and emits change events. */
 export class EngineState {

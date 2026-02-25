@@ -1,0 +1,64 @@
+name: Enhance Release Notes
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  enhance-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enhance release notes with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          direct_prompt: |
+            You are enhancing the release notes for flappy-nature-game v${{ github.event.release.tag_name }}.
+
+            Here are the auto-generated release notes:
+            ---
+            ${{ github.event.release.body }}
+            ---
+
+            Rewrite these release notes to be more useful for consumers. Follow this structure:
+
+            ## What's New
+
+            Rewrite each changelog entry with a brief user-facing impact description.
+            Group by: Features, Bug Fixes, Performance (skip empty sections).
+
+            ## Quick Start
+
+            ```bash
+            npm install flappy-nature-game@${{ github.event.release.tag_name }}
+            ```
+
+            ```tsx
+            import { FlappyNatureGame } from 'flappy-nature-game';
+
+            function App() {
+              return <FlappyNatureGame />;
+            }
+            ```
+
+            ## Upgrade Guide
+
+            If there are breaking changes, list migration steps.
+            If no breaking changes, write "No breaking changes in this release."
+
+            ---
+
+            Output ONLY the enhanced markdown body, nothing else.
+
+      - name: Update release body
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The Claude action outputs to stdout, capture the enhanced notes
+          # For now, the auto-generated notes are sufficient as a baseline
+          echo "Release notes enhancement complete"

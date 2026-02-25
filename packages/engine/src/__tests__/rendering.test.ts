@@ -11,23 +11,23 @@ import type {
   Tree,
 } from '@repo/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { BackgroundSystem } from '../background.js';
-import { DEFAULT_COLORS, buildFontCache } from '../cache.js';
-import type { CachedFonts } from '../cache.js';
+import type { BackgroundSystem } from '../background';
+import { DEFAULT_COLORS, buildFontCache } from '../cache';
+import type { CachedFonts } from '../cache';
+import { Renderer } from '../renderer';
 import {
   drawBuilding,
   drawCloudsPrerendered,
   drawPlane,
   drawSkylineSegment,
   drawTree,
-} from '../renderer-background.js';
+} from '../renderer-background';
 import {
   buildGradients,
   buildPipeLipCache,
   prerenderAllClouds,
   prerenderCloud,
-} from '../renderer-prerender.js';
-import { Renderer } from '../renderer.js';
+} from '../renderer-prerender';
 
 // ---------------------------------------------------------------------------
 // Helpers

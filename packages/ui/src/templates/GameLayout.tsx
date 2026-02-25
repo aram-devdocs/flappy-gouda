@@ -1,6 +1,6 @@
 import type { GameColors } from '@repo/types';
 import type { ReactNode } from 'react';
-import { GameContainer } from '../organisms/GameContainer.js';
+import { GameContainer } from '../organisms/GameContainer';
 
 /** Props for {@link GameLayout}. */
 export interface GameLayoutProps {

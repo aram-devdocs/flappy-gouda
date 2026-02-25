@@ -1,17 +1,22 @@
 import type { Cloud, GameColors } from '@repo/types';
-import type { BackgroundSystem } from './background.js';
-import { PIPE_LIP } from './config.js';
-import { createLogger } from './logger.js';
-import { TAU } from './math.js';
+import type { BackgroundSystem } from './background';
+import { PIPE_LIP } from './config';
+import { createLogger } from './logger';
+import { TAU } from './math';
 
 const log = createLogger('renderer-prerender');
 
+/** Cached offscreen canvas holding the pre-rendered pipe lip (rounded cap). */
 export interface PipeLipCache {
+  /** The offscreen canvas, or null if context creation failed. */
   canvas: HTMLCanvasElement | null;
+  /** Logical width of the lip in CSS pixels. */
   logW: number;
+  /** Logical height of the lip in CSS pixels. */
   logH: number;
 }
 
+/** Pre-render a single cloud to an offscreen canvas for fast blitting during the game loop. */
 export function prerenderCloud(c: Cloud, dpr: number, colors: GameColors): void {
   const pad = 4;
   const w = c.w;
@@ -41,6 +46,7 @@ export function prerenderCloud(c: Cloud, dpr: number, colors: GameColors): void 
   c._logH = cH;
 }
 
+/** Pre-render all cloud layers (near, far, mid) to offscreen canvases. */
 export function prerenderAllClouds(
   nearClouds: Cloud[],
   bg: BackgroundSystem,
@@ -54,6 +60,7 @@ export function prerenderAllClouds(
   }
 }
 
+/** Build an offscreen canvas cache for the rounded pipe lip cap shape. */
 export function buildPipeLipCache(
   pipeWidth: number,
   dpr: number,
@@ -87,12 +94,17 @@ export function buildPipeLipCache(
   return { canvas: offC, logW: lipW, logH: lipH };
 }
 
+/** Cached CanvasGradient objects reused across frames to avoid per-frame allocation. */
 export interface GradientCache {
+  /** Vertical gradient for the sky background. */
   skyGrad: CanvasGradient | null;
+  /** Horizontal magenta-to-cyan accent gradient. */
   accentGrad: CanvasGradient | null;
+  /** Horizontal gradient for pipe columns. */
   pipeGrad: CanvasGradient | null;
 }
 
+/** Create and return cached sky, accent, and pipe gradients for the current canvas dimensions. */
 export function buildGradients(
   ctx: CanvasRenderingContext2D,
   width: number,

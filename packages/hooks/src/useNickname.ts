@@ -2,12 +2,17 @@ import { useCallback, useEffect, useState } from 'react';
 
 const NICKNAME_KEY = 'sn-flappy-nickname';
 
+/** Return value of the useNickname hook. */
 export interface UseNicknameReturn {
+  /** Current nickname, or null if unset. */
   nickname: string | null;
+  /** Persist a new nickname to localStorage. */
   setNickname: (nickname: string) => void;
+  /** Remove the stored nickname. */
   clearNickname: () => void;
 }
 
+/** Manages a player nickname persisted in localStorage and synced across tabs. */
 export function useNickname(): UseNicknameReturn {
   // Read from localStorage on init, return null if not set
   const [nickname, setNicknameState] = useState<string | null>(() => {
