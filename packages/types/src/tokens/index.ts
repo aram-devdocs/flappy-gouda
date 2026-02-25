@@ -1,7 +1,7 @@
 import type { GameColors } from '../game.js';
 import { COLOR_TOKENS, CSS_VAR_PREFIX } from './colors.js';
 
-export { COLOR_TOKENS, COLOR_RGB, CSS_VAR_PREFIX, RGBA_TOKENS } from './colors.js';
+export { COLOR_TOKENS, COLOR_RGB, CSS_VAR_PREFIX, RGBA_TOKENS, STATUS_COLORS } from './colors.js';
 export { FONT_FAMILY, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT } from './typography.js';
 export { SPACING, RADIUS, BORDER_WIDTH } from './spacing.js';
 export { SHADOW, TEXT_SHADOW } from './shadows.js';

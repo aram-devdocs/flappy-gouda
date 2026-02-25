@@ -7,13 +7,15 @@ import {
   GameHeader,
   GameLayout,
   GameOverScreen,
+  NicknameModal,
   ScoreMigrationModal,
   TitleScreen,
 } from '@repo/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { GameErrorBoundary } from './GameErrorBoundary.js';
+import { LeaderboardOverlay } from './LeaderboardOverlay.js';
+import { useLeaderboardState } from './useLeaderboardState.js';
 
-/** Top-level game component that wires engine, hooks, and UI together. */
 export function FlappyNatureGame({
   colors,
   bannerTexts,
@@ -22,8 +24,13 @@ export function FlappyNatureGame({
   onStateChange,
   onScoreChange,
   onBestScoreChange,
+  onDifficultyChange,
   className,
   showFps = false,
+  leaderboard,
+  leaderboardCallbacks,
+  leaderboardExpanded = false,
+  nickname,
 }: FlappyNatureGameProps) {
   const {
     canvasRef,
@@ -47,6 +54,7 @@ export function FlappyNatureGame({
 
   const migration = useScoreMigration(bestScores);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const lb = useLeaderboardState(state, score, difficulty, nickname, leaderboardCallbacks);
 
   useEffect(() => {
     onStateChange?.(state);
@@ -57,6 +65,9 @@ export function FlappyNatureGame({
   useEffect(() => {
     onBestScoreChange?.(bestScores);
   }, [bestScores, onBestScoreChange]);
+  useEffect(() => {
+    onDifficultyChange?.(difficulty);
+  }, [difficulty, onDifficultyChange]);
 
   const handleFlap = useCallback(() => {
     if (pickerOpen) return;
@@ -128,6 +139,8 @@ export function FlappyNatureGame({
 
   const currentBest = bestScores[difficulty] ?? 0;
   const isOverlayVisible = state !== 'play' || pickerOpen || migration.showModal;
+  const hasLeaderboard = !!leaderboard;
+  const hasCallbacks = !!leaderboardCallbacks;
 
   return (
     <GameErrorBoundary>
@@ -161,6 +174,20 @@ export function FlappyNatureGame({
           onSelect={handleDifficultySelect}
           onClose={handlePickerClose}
         />
+        {hasLeaderboard && !leaderboardExpanded && (
+          <LeaderboardOverlay leaderboard={leaderboard} gameState={state} />
+        )}
+        {hasCallbacks && (
+          <NicknameModal
+            visible={lb.showNicknameModal}
+            value={lb.nicknameValue}
+            onChange={lb.handleNicknameChange}
+            onSubmit={lb.handleNicknameSubmit}
+            onClose={lb.closeNicknameModal}
+            error={lb.nicknameError}
+            checking={lb.nicknameChecking}
+          />
+        )}
       </GameLayout>
     </GameErrorBoundary>
   );

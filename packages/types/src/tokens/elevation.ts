@@ -1,6 +1,9 @@
 /** Z-index levels. */
 export const Z_INDEX = {
+  base: 0,
+  miniOverlay: 1,
   overlay: 2,
+  tab: 3,
   modal: 5,
   picker: 10,
 } as const;

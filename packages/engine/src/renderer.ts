@@ -3,7 +3,6 @@ import { atIndex } from './assert.js';
 import type { BackgroundSystem } from './background.js';
 import type { CachedFonts } from './cache.js';
 import { BG } from './config.js';
-import { TAU } from './math.js';
 import {
   drawBuilding,
   drawCloudsPrerendered,
@@ -12,6 +11,7 @@ import {
   drawTree,
 } from './renderer-background.js';
 import { drawBird, drawPipes, drawScore, drawSettingsIcon } from './renderer-entities.js';
+import { drawGround, drawSky } from './renderer-ground.js';
 import {
   buildGradients,
   buildPipeLipCache,
@@ -85,10 +85,7 @@ export class Renderer {
 
   /** Fill the canvas with the sky gradient. */
   drawSky(): void {
-    if (this.grads.skyGrad) {
-      this.ctx.fillStyle = this.grads.skyGrad;
-      this.ctx.fillRect(0, 0, this.deps.width, this.deps.height);
-    }
+    drawSky(this.ctx, this.deps.width, this.deps.height, this.grads.skyGrad);
   }
 
   /** Draw all parallax background layers (clouds, skyline, buildings, trees, planes). */
@@ -150,39 +147,15 @@ export class Renderer {
 
   /** Draw the ground strip with decorations and accent gradient. */
   drawGround(bg: BackgroundSystem): void {
-    const ctx = this.ctx;
-    const { width, height, groundH } = this.deps;
-
-    ctx.fillStyle = this.colors.navy;
-    ctx.fillRect(0, height - groundH, width, groundH);
-
-    if (bg.layers) {
-      const groundY = height - groundH;
-      const dashY = groundY + groundH / 2 - 1;
-      const dotY = groundY + groundH * 0.7;
-      ctx.globalAlpha = 0.15;
-
-      ctx.fillStyle = this.colors.cyan;
-      for (const g of bg.layers.groundDeco) {
-        if (g.type === 'dash') ctx.fillRect(g.x, dashY, 8, 2);
-      }
-
-      ctx.fillStyle = this.colors.magenta;
-      ctx.beginPath();
-      for (const g of bg.layers.groundDeco) {
-        if (g.type !== 'dash') {
-          ctx.moveTo(g.x + 1.5, dotY);
-          ctx.arc(g.x, dotY, 1.5, 0, TAU);
-        }
-      }
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-
-    if (this.grads.accentGrad) {
-      ctx.fillStyle = this.grads.accentGrad;
-      ctx.fillRect(0, height - groundH, width, 3);
-    }
+    drawGround(
+      this.ctx,
+      this.deps.width,
+      this.deps.height,
+      this.deps.groundH,
+      this.colors,
+      bg.layers?.groundDeco ?? null,
+      this.grads.accentGrad,
+    );
   }
 
   drawBird(y: number, rot: number): void {

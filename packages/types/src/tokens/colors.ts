@@ -20,6 +20,14 @@ export const COLOR_RGB = {
   black: '0, 0, 0',
 } as const;
 
+/** Semantic status indicator colors. */
+export const STATUS_COLORS = {
+  success: '#22c55e',
+  warning: '#eab308',
+  error: '#ef4444',
+  neutral: '#9ca3af',
+} as const;
+
 /** Pre-composed RGBA strings used across components. */
 export const RGBA_TOKENS = {
   scrimLight: `rgba(${COLOR_RGB.navy}, 0.3)`,

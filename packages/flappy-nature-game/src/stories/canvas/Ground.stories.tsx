@@ -1,4 +1,5 @@
-import { DEFAULT_COLORS, TAU, buildGradients } from '@repo/engine';
+import { DEFAULT_COLORS, buildGradients, drawGround } from '@repo/engine';
+import type { GroundDeco } from '@repo/types';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useCallback } from 'react';
 import { CanvasStage } from '../../CanvasStage';
@@ -7,38 +8,23 @@ const W = 380;
 const H = 80;
 const GROUND_H = 50;
 
+function makeStoryGroundDeco(width: number): GroundDeco[] {
+  const deco: GroundDeco[] = [];
+  for (let x = 20; x < width; x += 40) {
+    deco.push({ x, type: 'dash', speed: 0 });
+  }
+  for (let x = 35; x < width; x += 50) {
+    deco.push({ x, type: 'dot', speed: 0 });
+  }
+  return deco;
+}
+
 function GroundPreview({ showDecorations }: { showDecorations: boolean }) {
   const draw = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       const grads = buildGradients(ctx, W, H, GROUND_H, 52, DEFAULT_COLORS);
-
-      ctx.fillStyle = DEFAULT_COLORS.navy;
-      ctx.fillRect(0, H - GROUND_H, W, GROUND_H);
-
-      if (showDecorations) {
-        const dashY = H - GROUND_H + GROUND_H / 2 - 1;
-        const dotY = H - GROUND_H + GROUND_H * 0.7;
-        ctx.globalAlpha = 0.15;
-
-        ctx.fillStyle = DEFAULT_COLORS.cyan;
-        for (let x = 20; x < W; x += 40) {
-          ctx.fillRect(x, dashY, 8, 2);
-        }
-
-        ctx.fillStyle = DEFAULT_COLORS.magenta;
-        ctx.beginPath();
-        for (let x = 35; x < W; x += 50) {
-          ctx.moveTo(x + 1.5, dotY);
-          ctx.arc(x, dotY, 1.5, 0, TAU);
-        }
-        ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-
-      if (grads.accentGrad) {
-        ctx.fillStyle = grads.accentGrad;
-        ctx.fillRect(0, H - GROUND_H, W, 3);
-      }
+      const deco = showDecorations ? makeStoryGroundDeco(W) : null;
+      drawGround(ctx, W, H, GROUND_H, DEFAULT_COLORS, deco, grads.accentGrad);
     },
     [showDecorations],
   );

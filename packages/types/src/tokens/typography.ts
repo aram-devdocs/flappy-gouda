@@ -2,6 +2,7 @@
 export const FONT_FAMILY = {
   heading: '"Poppins", sans-serif',
   body: '"apertura", "Inter", system-ui, sans-serif',
+  mono: '"SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace',
 } as const;
 
 /** Font size scale (t-shirt sizing). */

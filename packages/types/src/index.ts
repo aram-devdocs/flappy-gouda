@@ -31,6 +31,20 @@ export type { EngineEvents, EngineEventName, EngineConfig } from './engine';
 
 export type { FlappyNatureGameProps } from './props';
 
+export type {
+  LeaderboardEntry,
+  NicknameCheckResult,
+  LeaderboardConnectionStatus,
+  LeaderboardData,
+  LeaderboardCallbacks,
+  LeaderboardProps,
+  LeaderboardSeparator,
+  LeaderboardWindowEntry,
+  LeaderboardWindowItem,
+} from './leaderboard';
+
+export { NICKNAME_LENGTH, NICKNAME_PATTERN } from './leaderboard';
+
 export type { ScoreComparison } from './migration';
 
 export {
@@ -51,5 +65,6 @@ export {
   TEXT_SHADOW,
   Z_INDEX,
   OPACITY,
+  STATUS_COLORS,
   cssVar,
 } from './tokens';

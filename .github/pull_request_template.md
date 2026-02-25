@@ -19,6 +19,8 @@
 - [ ] `@repo/hooks`
 - [ ] `@repo/flappy-nature-game`
 - [ ] `@repo/web`
+- [ ] `supabase/` (migrations, functions)
+- [ ] Leaderboard service layer
 - [ ] Scripts / CI
 - [ ] Documentation
 
@@ -30,6 +32,8 @@
 - [ ] All validators pass (`pnpm validate:all`)
 - [ ] Storybook builds (`pnpm --filter=@repo/ui build-storybook`)
 - [ ] New components have stories
+- [ ] Leaderboard service tests pass
+- [ ] Leaderboard UI components have stories
 
 ## Architecture Compliance
 - [ ] `pnpm validate:all` passes
@@ -37,6 +41,9 @@
 - [ ] No React imports in engine or types
 - [ ] No hooks in UI components
 - [ ] All source files under 200 lines
+- [ ] No Supabase imports in packages/ (only in apps/web)
+- [ ] Leaderboard types are backend-agnostic
+- [ ] FlappyNatureGame works without leaderboard props
 
 ## Breaking Changes
 <!-- If "Breaking change" checked above, describe migration steps. Otherwise write "None." -->

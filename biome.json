@@ -100,6 +100,6 @@
     }
   ],
   "files": {
-    "ignore": ["dist", "node_modules", ".turbo", "storybook-static", "*.d.ts"]
+    "ignore": ["dist", "node_modules", ".turbo", "storybook-static", "*.d.ts", ".claude"]
   }
 }

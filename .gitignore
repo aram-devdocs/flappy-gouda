@@ -33,4 +33,8 @@ storybook-static
 
 # Playwright MCP
 .playwright-mcp
-*.png
+
+# Supabase
+.supabase/
+supabase/.temp/
+supabase/.branches/

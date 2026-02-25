@@ -150,12 +150,42 @@ function scanForReactImports(dir: string, pkgName: string): void {
   }
 }
 
+function validateNoSupabaseInPackages(packages: WorkspacePackage[]): void {
+  for (const { dir, pkg } of packages) {
+    if (!pkg.name.startsWith('@repo/') || pkg.name === '@repo/web') continue;
+    const srcDir = join(dir, 'src');
+    if (!existsSync(srcDir)) continue;
+    scanForSupabaseImports(srcDir, pkg.name);
+  }
+}
+
+function scanForSupabaseImports(dir: string, pkgName: string): void {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory() && entry.name !== '__tests__') {
+      scanForSupabaseImports(fullPath, pkgName);
+    } else if (entry.isFile() && /\.tsx?$/.test(entry.name)) {
+      const content = readFileSync(fullPath, 'utf-8');
+      const lines = content.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (/import.*from\s+['"]@supabase/.test(lines[i] ?? '')) {
+          const rel = fullPath.replace(`${ROOT}/`, '');
+          errors.push(
+            `${pkgName}: Supabase import found at ${rel}:${i + 1} (only allowed in apps/web)`,
+          );
+        }
+      }
+    }
+  }
+}
+
 function validate(): void {
   const packages = getWorkspacePackages();
   validateDependencyAllowlist(packages);
   validateNoCycles(packages);
   validateNoReact(packages);
   validateSourceReactImports(packages);
+  validateNoSupabaseInPackages(packages);
 }
 
 validate();

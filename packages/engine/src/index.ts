@@ -26,6 +26,7 @@ export {
   drawSkylineSegment,
   drawCloudsPrerendered,
 } from './renderer-background.js';
+export { drawGround, drawSky } from './renderer-ground.js';
 export { prerenderCloud, buildPipeLipCache, buildGradients } from './renderer-prerender.js';
 export { generateSkylineSegment } from './skyline.js';
 export { loadHeartImage } from './heart.js';

@@ -8,9 +8,11 @@ import {
   drawBird,
   drawBuilding,
   drawCloudsPrerendered,
+  drawGround,
   drawPipes,
   drawPlane,
   drawScore,
+  drawSky,
   drawSkylineSegment,
   drawTree,
   generateSkylineSegment,
@@ -49,10 +51,7 @@ function FullScenePreview({ score, birdY }: { score: number; birdY: number }) {
       const lip = buildPipeLipCache(52, 1, DEFAULT_COLORS);
 
       // Sky
-      if (grads.skyGrad) {
-        ctx.fillStyle = grads.skyGrad;
-        ctx.fillRect(0, 0, W, H);
-      }
+      drawSky(ctx, W, H, grads.skyGrad);
 
       // Far clouds
       ctx.globalAlpha = BG.cloudFarAlpha;
@@ -146,12 +145,7 @@ function FullScenePreview({ score, birdY }: { score: number; birdY: number }) {
       drawPipes(ctx, pipes, 2, 52, 162, H, grads.pipeGrad, lip);
 
       // Ground
-      ctx.fillStyle = DEFAULT_COLORS.navy;
-      ctx.fillRect(0, GROUND_Y, W, GROUND_H);
-      if (grads.accentGrad) {
-        ctx.fillStyle = grads.accentGrad;
-        ctx.fillRect(0, GROUND_Y, W, 3);
-      }
+      drawGround(ctx, W, H, GROUND_H, DEFAULT_COLORS, null, grads.accentGrad);
 
       // Bird
       drawBird(ctx, birdY, 0, 70, 28, null, DEFAULT_COLORS);

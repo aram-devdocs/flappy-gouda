@@ -11,8 +11,11 @@
   },
   "dependencies": {
     "@repo/flappy-nature-game": "workspace:*",
+    "@supabase/supabase-js": "^2.97.0",
+    "@tanstack/react-query": "^5.90.21",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",

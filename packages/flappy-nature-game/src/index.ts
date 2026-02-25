@@ -4,6 +4,14 @@ export { CanvasStage } from './CanvasStage.js';
 // Re-export GamePage so apps/web can use it without violating dependency rules
 export { GamePage } from '@repo/ui';
 
+// Re-export leaderboard UI components for external rendering
+export { LeaderboardBottomSheet } from '@repo/ui';
+export type { LeaderboardBottomSheetProps } from '@repo/ui';
+export { LeaderboardPanel } from '@repo/ui';
+export type { LeaderboardPanelProps } from '@repo/ui';
+export { LeaderboardTab } from '@repo/ui';
+export type { LeaderboardTabProps } from '@repo/ui';
+
 // Re-export design tokens for consumer convenience
 export {
   DESIGN_TOKENS,
@@ -28,4 +36,19 @@ export type {
   DifficultyKey,
   BestScores,
   GameColors,
+  LeaderboardData,
+  LeaderboardCallbacks,
+  LeaderboardEntry,
+  LeaderboardConnectionStatus,
+  LeaderboardProps,
+  NicknameCheckResult,
+  LeaderboardSeparator,
+  LeaderboardWindowEntry,
+  LeaderboardWindowItem,
 } from '@repo/types';
+
+export { NICKNAME_LENGTH, NICKNAME_PATTERN } from '@repo/types';
+
+// Re-export hooks needed by web app to maintain architecture compliance
+export { useNickname } from '@repo/hooks';
+export type { UseNicknameReturn } from '@repo/hooks';
