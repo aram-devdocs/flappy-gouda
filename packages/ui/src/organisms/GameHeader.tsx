@@ -1,7 +1,7 @@
 import type { DifficultyKey } from '@repo/types';
 import { FONT_SIZE, FONT_WEIGHT, OPACITY, RGBA_TOKENS, SPACING, cssVar } from '@repo/types';
-import { HeartIcon } from '../atoms/HeartIcon.js';
-import { DifficultyBadge } from '../molecules/DifficultyBadge.js';
+import { HeartIcon } from '../atoms/HeartIcon';
+import { DifficultyBadge } from '../molecules/DifficultyBadge';
 
 /** Props for {@link GameHeader}. */
 export interface GameHeaderProps {

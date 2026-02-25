@@ -12,11 +12,11 @@ import {
   TitleScreen,
 } from '@repo/ui';
 import { useEffect, useState } from 'react';
-import { GameErrorBoundary } from './GameErrorBoundary.js';
-import { LeaderboardOverlay } from './LeaderboardOverlay.js';
-import { useDebugBridge } from './useDebugBridge.js';
-import { useGameCallbacks } from './useGameCallbacks.js';
-import { useLeaderboardState } from './useLeaderboardState.js';
+import { GameErrorBoundary } from './GameErrorBoundary';
+import { LeaderboardOverlay } from './LeaderboardOverlay';
+import { useDebugBridge } from './useDebugBridge';
+import { useGameCallbacks } from './useGameCallbacks';
+import { useLeaderboardState } from './useLeaderboardState';
 
 export function FlappyNatureGame({
   colors,

@@ -1,18 +1,12 @@
 import type { Bird, Cloud, GameConfig, Pipe } from '@repo/types';
-import type { BackgroundSystem } from './background.js';
-import type { DebugMetricsCollector } from './debug-metrics.js';
-import { recordDebugFrame } from './engine-debug-bridge.js';
-import { syncPrevBird } from './engine-lifecycle.js';
-import type { EngineLoop } from './engine-loop.js';
-import type { EngineState } from './engine-state.js';
-import {
-  checkGroundCollision,
-  spawnPipe,
-  updateBird,
-  updateClouds,
-  updatePipes,
-} from './physics.js';
-import type { Renderer } from './renderer.js';
+import type { BackgroundSystem } from './background';
+import type { DebugMetricsCollector } from './debug-metrics';
+import { recordDebugFrame } from './engine-debug-bridge';
+import { syncPrevBird } from './engine-lifecycle';
+import type { EngineLoop } from './engine-loop';
+import type { EngineState } from './engine-state';
+import { checkGroundCollision, spawnPipe, updateBird, updateClouds, updatePipes } from './physics';
+import type { Renderer } from './renderer';
 
 export function engineUpdate(
   loop: EngineLoop,

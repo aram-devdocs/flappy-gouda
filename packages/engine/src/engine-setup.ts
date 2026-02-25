@@ -1,9 +1,10 @@
 import type { Cloud, GameColors, GameConfig } from '@repo/types';
-import { BackgroundSystem } from './background.js';
-import type { CachedFonts } from './cache.js';
-import { BASE_H, BASE_W } from './config.js';
-import { Renderer } from './renderer.js';
+import { BackgroundSystem } from './background';
+import type { CachedFonts } from './cache';
+import { BASE_H, BASE_W } from './config';
+import { Renderer } from './renderer';
 
+/** Configure canvas dimensions and DPR scaling, returning the device pixel ratio. */
 export function setupCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): number {
   const maxCssW = Math.max(1, Math.min(BASE_W, window.innerWidth - 48));
   const cssScale = maxCssW / BASE_W;
@@ -18,6 +19,7 @@ export function setupCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingConte
   return dpr;
 }
 
+/** Create the initial array of randomly positioned clouds based on game config. */
 export function initClouds(config: GameConfig): Cloud[] {
   const clouds: Cloud[] = [];
   for (let i = 0; i < config.cloudCount; i++) {
@@ -35,6 +37,7 @@ export function initClouds(config: GameConfig): Cloud[] {
   return clouds;
 }
 
+/** Instantiate a BackgroundSystem with layout derived from the game config. */
 export function createBgSystem(config: GameConfig, bannerTexts: string[]): BackgroundSystem {
   return new BackgroundSystem({
     width: config.width,
@@ -45,6 +48,7 @@ export function createBgSystem(config: GameConfig, bannerTexts: string[]): Backg
   });
 }
 
+/** Create a Renderer instance wired to the given canvas context, config, colors, and fonts. */
 export function createRenderer(
   ctx: CanvasRenderingContext2D,
   config: GameConfig,

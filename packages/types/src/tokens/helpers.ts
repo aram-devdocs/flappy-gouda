@@ -1,4 +1,4 @@
-import { COLOR_TOKENS, CSS_VAR_PREFIX } from './colors.js';
+import { COLOR_TOKENS, CSS_VAR_PREFIX } from './colors';
 
 type ColorKey = keyof typeof COLOR_TOKENS;
 

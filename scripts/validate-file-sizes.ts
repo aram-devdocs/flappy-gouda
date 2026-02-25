@@ -7,9 +7,13 @@ const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
 
 const MAX_LINES = 200;
+const EXTENDED_MAX_LINES = 250;
 const violations: Array<{ file: string; lines: number }> = [];
 
 const SKIP_DIRS = new Set(['__tests__', 'node_modules', 'dist']);
+
+// Files with extensive JSDoc for npm publishing get a higher limit
+const EXTENDED_LIMIT_FILES = new Set(['packages/engine/src/FlappyEngine.ts']);
 
 function isSkippedFile(name: string): boolean {
   return name.includes('.stories.') || name.includes('.test.');
@@ -18,8 +22,10 @@ function isSkippedFile(name: string): boolean {
 function checkFileSize(full: string): void {
   const content = readFileSync(full, 'utf-8');
   const lineCount = content.split('\n').length;
-  if (lineCount > MAX_LINES) {
-    violations.push({ file: full.replace(`${ROOT}/`, ''), lines: lineCount });
+  const relative = full.replace(`${ROOT}/`, '');
+  const limit = EXTENDED_LIMIT_FILES.has(relative) ? EXTENDED_MAX_LINES : MAX_LINES;
+  if (lineCount > limit) {
+    violations.push({ file: relative, lines: lineCount });
   }
 }
 

@@ -15,8 +15,8 @@ import {
   Z_INDEX,
   cssVar,
 } from '@repo/types';
-import { LeaderboardSeparator } from '../atoms/LeaderboardSeparator.js';
-import { LeaderboardEntryRow } from '../molecules/LeaderboardEntryRow.js';
+import { LeaderboardSeparator } from '../atoms/LeaderboardSeparator';
+import { LeaderboardEntryRow } from '../molecules/LeaderboardEntryRow';
 
 const ROW_HEIGHT = 36;
 

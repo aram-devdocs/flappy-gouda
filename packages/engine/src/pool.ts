@@ -1,4 +1,4 @@
-import { atIndex } from './assert.js';
+import { atIndex } from './assert';
 
 /** Swap-and-pop removal from an object pool. Returns the new active count. */
 export function poolRemove<T>(pool: T[], i: number, activeCount: number): number {

@@ -1,6 +1,6 @@
 import type { DifficultyKey, LeaderboardEntry } from '@repo/flappy-nature-game';
 import { useQuery } from '@tanstack/react-query';
-import { useLeaderboardService } from '../components/LeaderboardProvider.js';
+import { useLeaderboardService } from '../components/LeaderboardProvider';
 
 export function useLeaderboard(difficulty: DifficultyKey, surroundCount = 3) {
   const service = useLeaderboardService();

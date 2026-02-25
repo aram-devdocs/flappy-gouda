@@ -1,24 +1,24 @@
 import type { Cloud, GameColors, Pipe } from '@repo/types';
-import { atIndex } from './assert.js';
-import type { BackgroundSystem } from './background.js';
-import type { CachedFonts } from './cache.js';
-import { BG } from './config.js';
+import { atIndex } from './assert';
+import type { BackgroundSystem } from './background';
+import type { CachedFonts } from './cache';
+import { BG } from './config';
 import {
   drawBuilding,
   drawCloudsPrerendered,
   drawPlane,
   drawSkylineSegment,
   drawTree,
-} from './renderer-background.js';
-import { drawBird, drawPipes, drawScore, drawSettingsIcon } from './renderer-entities.js';
-import { drawGround, drawSky } from './renderer-ground.js';
+} from './renderer-background';
+import { drawBird, drawPipes, drawScore, drawSettingsIcon } from './renderer-entities';
+import { drawGround, drawSky } from './renderer-ground';
 import {
   buildGradients,
   buildPipeLipCache,
   prerenderAllClouds,
   prerenderCloud,
-} from './renderer-prerender.js';
-import type { GradientCache, PipeLipCache } from './renderer-prerender.js';
+} from './renderer-prerender';
+import type { GradientCache, PipeLipCache } from './renderer-prerender';
 
 interface RendererDeps {
   width: number;

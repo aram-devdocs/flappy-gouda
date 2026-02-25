@@ -17,13 +17,13 @@ import {
 } from '@repo/flappy-nature-game';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useBreakpoint } from '../hooks/useBreakpoint.js';
-import { useDebugRecording } from '../hooks/useDebugRecording.js';
-import { useLeaderboard } from '../hooks/useLeaderboard.js';
-import { useLeaderboardRealtime } from '../hooks/useLeaderboardRealtime.js';
-import { useLiveScores } from '../hooks/useLiveScores.js';
-import { useMergedLeaderboard } from '../hooks/useMergedLeaderboard.js';
-import { useLeaderboardService } from './LeaderboardProvider.js';
+import { useBreakpoint } from '../hooks/useBreakpoint';
+import { useDebugRecording } from '../hooks/useDebugRecording';
+import { useLeaderboard } from '../hooks/useLeaderboard';
+import { useLeaderboardRealtime } from '../hooks/useLeaderboardRealtime';
+import { useLiveScores } from '../hooks/useLiveScores';
+import { useMergedLeaderboard } from '../hooks/useMergedLeaderboard';
+import { useLeaderboardService } from './LeaderboardProvider';
 
 const DEBUG_PANEL_W = '280px';
 const TRANSITION = 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)';

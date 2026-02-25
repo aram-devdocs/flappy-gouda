@@ -1,5 +1,5 @@
-import type { EngineEventEmitter } from './engine-events.js';
-import { createLogger } from './logger.js';
+import type { EngineEventEmitter } from './engine-events';
+import { createLogger } from './logger';
 
 const log = createLogger('EngineLoop');
 const TICK_MS = 1000 / 60;

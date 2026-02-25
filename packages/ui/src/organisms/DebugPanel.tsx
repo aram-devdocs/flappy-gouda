@@ -10,8 +10,8 @@ import {
   Z_INDEX,
   cssVar,
 } from '@repo/types';
-import { DebugSparkline } from '../atoms/DebugSparkline.js';
-import { LABEL_STYLE, Stat, btnStyle, typeBadgeStyle } from '../atoms/DebugStat.js';
+import { DebugSparkline } from '../atoms/DebugSparkline';
+import { LABEL_STYLE, Stat, btnStyle, typeBadgeStyle } from '../atoms/DebugStat';
 
 /** Props for {@link DebugPanel}. */
 export interface DebugPanelProps {

@@ -1,8 +1,9 @@
 import type { Building, Cloud, GameColors, Plane, SkylineSegment, Tree } from '@repo/types';
-import type { CachedFonts } from './cache.js';
-import { BG } from './config.js';
-import { TAU, roundRectPath } from './math.js';
+import type { CachedFonts } from './cache';
+import { BG } from './config';
+import { TAU, roundRectPath } from './math';
 
+/** Draw all clouds from their pre-rendered offscreen canvases. */
 export function drawCloudsPrerendered(ctx: CanvasRenderingContext2D, cloudArr: Cloud[]): void {
   for (const c of cloudArr) {
     if (c._canvas) {
@@ -11,6 +12,7 @@ export function drawCloudsPrerendered(ctx: CanvasRenderingContext2D, cloudArr: C
   }
 }
 
+/** Draw a skyline segment including buildings, spires, domes, and cacti. */
 export function drawSkylineSegment(ctx: CanvasRenderingContext2D, seg: SkylineSegment): void {
   for (const b of seg.buildings) {
     const x = seg.x + b.ox;
@@ -41,6 +43,7 @@ export function drawSkylineSegment(ctx: CanvasRenderingContext2D, seg: SkylineSe
   }
 }
 
+/** Draw a small plane with trailing banner text, applying a vertical wobble animation. */
 export function drawPlane(
   ctx: CanvasRenderingContext2D,
   p: Plane,
@@ -114,6 +117,7 @@ export function drawPlane(
   ctx.textBaseline = 'alphabetic';
 }
 
+/** Draw a foreground building (house, apartment, or office) at its position. */
 export function drawBuilding(
   ctx: CanvasRenderingContext2D,
   b: Building,
@@ -169,6 +173,7 @@ export function drawBuilding(
   }
 }
 
+/** Draw a tree (pine triangle or round canopy) with a trunk at its position. */
 export function drawTree(ctx: CanvasRenderingContext2D, t: Tree, colors: GameColors): void {
   const cx = t.x + t.w / 2;
 

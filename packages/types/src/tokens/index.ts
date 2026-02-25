@@ -1,12 +1,12 @@
-import type { GameColors } from '../game.js';
-import { COLOR_TOKENS, CSS_VAR_PREFIX } from './colors.js';
+import type { GameColors } from '../game';
+import { COLOR_TOKENS, CSS_VAR_PREFIX } from './colors';
 
-export { COLOR_TOKENS, COLOR_RGB, CSS_VAR_PREFIX, RGBA_TOKENS, STATUS_COLORS } from './colors.js';
-export { FONT_FAMILY, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT } from './typography.js';
-export { SPACING, RADIUS, BORDER_WIDTH } from './spacing.js';
-export { SHADOW, TEXT_SHADOW } from './shadows.js';
-export { Z_INDEX, OPACITY } from './elevation.js';
-export { cssVar } from './helpers.js';
+export { COLOR_TOKENS, COLOR_RGB, CSS_VAR_PREFIX, RGBA_TOKENS, STATUS_COLORS } from './colors';
+export { FONT_FAMILY, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT } from './typography';
+export { SPACING, RADIUS, BORDER_WIDTH } from './spacing';
+export { SHADOW, TEXT_SHADOW } from './shadows';
+export { Z_INDEX, OPACITY } from './elevation';
+export { cssVar } from './helpers';
 
 /** Backward-compatible design tokens object. */
 export const DESIGN_TOKENS = {

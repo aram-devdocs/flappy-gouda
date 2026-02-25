@@ -8,8 +8,8 @@ import type {
   DebugSystemInfo,
   GameState,
 } from '@repo/types';
-import { buildDebugSnapshot } from './debug-snapshot.js';
-import type { EngineEventEmitter } from './engine-events.js';
+import { buildDebugSnapshot } from './debug-snapshot';
+import type { EngineEventEmitter } from './engine-events';
 
 const BUFFER_SIZE = 120;
 const JANK_THRESHOLD_MS = 33.3;

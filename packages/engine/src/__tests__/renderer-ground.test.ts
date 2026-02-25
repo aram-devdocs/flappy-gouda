@@ -1,7 +1,7 @@
 import type { GameColors, GroundDeco } from '@repo/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_COLORS } from '../cache.js';
-import { drawGround, drawSky } from '../renderer-ground.js';
+import { DEFAULT_COLORS } from '../cache';
+import { drawGround, drawSky } from '../renderer-ground';
 
 function makeCtx(): CanvasRenderingContext2D {
   return {

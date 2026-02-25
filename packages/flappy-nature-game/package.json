@@ -1,10 +1,23 @@
 {
   "name": "@repo/flappy-nature-game",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A drop-in canvas-based Flappy Bird game component for React 18+",
+  "keywords": ["flappy-bird", "game", "canvas", "react", "react-component", "typescript"],
+  "author": "Aram Hammoudeh",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aram-devdocs/flappy-nature.git",
+    "directory": "packages/flappy-nature-game"
+  },
+  "homepage": "https://flappy-nature.aramhammoudeh.com",
+  "bugs": {
+    "url": "https://github.com/aram-devdocs/flappy-nature/issues"
+  },
   "sideEffects": false,
   "type": "module",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
@@ -13,8 +26,14 @@
       "require": "./dist/index.cjs"
     }
   },
+  "files": ["dist", "README.md", "LICENSE"],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "scripts": {
     "build": "tsup",
+    "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

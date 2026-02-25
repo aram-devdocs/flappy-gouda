@@ -1,5 +1,5 @@
 import type { GameColors, GroundDeco } from '@repo/types';
-import { TAU } from './math.js';
+import { TAU } from './math';
 
 /** Fill the canvas with the sky gradient (no-op when grad is null). */
 export function drawSky(

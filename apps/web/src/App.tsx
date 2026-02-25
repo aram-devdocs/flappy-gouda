@@ -1,6 +1,6 @@
-import { DemoPage } from './components/DemoPage.js';
-import { GameWithLeaderboard } from './components/GameWithLeaderboard.js';
-import { LeaderboardProvider } from './components/LeaderboardProvider.js';
+import { DemoPage } from './components/DemoPage';
+import { GameWithLeaderboard } from './components/GameWithLeaderboard';
+import { LeaderboardProvider } from './components/LeaderboardProvider';
 
 export function App() {
   return (

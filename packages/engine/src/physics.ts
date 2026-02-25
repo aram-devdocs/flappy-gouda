@@ -1,7 +1,7 @@
 import type { Bird, Cloud, GameConfig, Pipe } from '@repo/types';
-import { atIndex } from './assert.js';
-import { BIRD_ROTATION, PIPE_SPAWN_MARGIN } from './config.js';
-import { poolRemove } from './pool.js';
+import { atIndex } from './assert';
+import { BIRD_ROTATION, PIPE_SPAWN_MARGIN } from './config';
+import { poolRemove } from './pool';
 
 /** Outcome flags returned after a physics tick. */
 export interface PhysicsResult {

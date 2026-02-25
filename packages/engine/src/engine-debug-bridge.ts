@@ -1,7 +1,7 @@
 import type { DebugRecording } from '@repo/types';
-import type { BackgroundSystem } from './background.js';
-import type { DebugMetricsCollector } from './debug-metrics.js';
-import type { EngineLoop } from './engine-loop.js';
+import type { BackgroundSystem } from './background';
+import type { DebugMetricsCollector } from './debug-metrics';
+import type { EngineLoop } from './engine-loop';
 
 /** Record a debug frame after draw, plus entity counts. Zero cost when collector is null. */
 export function recordDebugFrame(

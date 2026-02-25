@@ -1,7 +1,7 @@
 import type { LeaderboardEntry, LeaderboardWindowItem } from '@repo/flappy-nature-game';
 import { useMemo } from 'react';
-import { computeLeaderboardWindow } from '../lib/leaderboard/compute-window.js';
-import type { LiveScoreBroadcast } from '../lib/leaderboard/service.js';
+import { computeLeaderboardWindow } from '../lib/leaderboard/compute-window';
+import type { LiveScoreBroadcast } from '../lib/leaderboard/service';
 
 interface WindowConfig {
   topCount: number;

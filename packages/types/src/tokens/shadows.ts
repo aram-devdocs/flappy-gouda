@@ -1,4 +1,4 @@
-import { RGBA_TOKENS } from './colors.js';
+import { RGBA_TOKENS } from './colors';
 
 /** Box shadow presets. */
 export const SHADOW = {

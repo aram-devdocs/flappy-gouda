@@ -4,10 +4,10 @@ import type {
   NicknameCheckResult,
 } from '@repo/flappy-nature-game';
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import { supabase } from '../supabase/client.js';
-import { isProfane } from './profanity.js';
-import { NicknameSchema, ScoreSubmitSchema } from './schemas.js';
-import type { LeaderboardService, LiveScoreBroadcast } from './service.js';
+import { supabase } from '../supabase/client';
+import { isProfane } from './profanity';
+import { NicknameSchema, ScoreSubmitSchema } from './schemas';
+import type { LeaderboardService, LiveScoreBroadcast } from './service';
 
 export class SupabaseLeaderboardService implements LeaderboardService {
   private channels: RealtimeChannel[] = [];

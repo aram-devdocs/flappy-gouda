@@ -1,5 +1,5 @@
 import { FONT_SIZE, OPACITY, SPACING, cssVar } from '@repo/types';
-import { NicknameCharCell } from '../atoms/NicknameCharCell.js';
+import { NicknameCharCell } from '../atoms/NicknameCharCell';
 
 /** Props for {@link NicknameInput}. */
 export interface NicknameInputProps {

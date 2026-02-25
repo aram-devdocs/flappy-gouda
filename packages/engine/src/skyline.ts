@@ -1,5 +1,5 @@
 import type { SkylineBuilding, SkylineCity, SkylineSegment } from '@repo/types';
-import { BG } from './config.js';
+import { BG } from './config';
 
 export function generateSkylineSegment(
   city: SkylineCity,

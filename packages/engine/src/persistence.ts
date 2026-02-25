@@ -1,6 +1,6 @@
 import type { BestScores, DifficultyKey } from '@repo/types';
 import { DIFF_KEYS } from '@repo/types';
-import { createLogger } from './logger.js';
+import { createLogger } from './logger';
 
 const log = createLogger('persistence');
 
