@@ -1,8 +1,15 @@
 {
   "name": "@repo/flappy-gouda-game",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A drop-in canvas-based Flappy Bird game component for React 18+",
-  "keywords": ["flappy-bird", "game", "canvas", "react", "react-component", "typescript"],
+  "keywords": [
+    "flappy-bird",
+    "game",
+    "canvas",
+    "react",
+    "react-component",
+    "typescript"
+  ],
   "author": "Aram Hammoudeh",
   "license": "MIT",
   "repository": {
@@ -26,7 +33,11 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
