@@ -27,6 +27,8 @@ export { LeaderboardEntryRow } from './molecules/LeaderboardEntryRow';
 export type { LeaderboardEntryRowProps } from './molecules/LeaderboardEntryRow';
 export { NicknameInput } from './molecules/NicknameInput';
 export type { NicknameInputProps } from './molecules/NicknameInput';
+export { ResetConfirmModal } from './molecules/ResetConfirmModal';
+export type { ResetConfirmModalProps } from './molecules/ResetConfirmModal';
 export { SettingsMenu } from './molecules/SettingsMenu';
 export type { SettingsMenuProps } from './molecules/SettingsMenu';
 

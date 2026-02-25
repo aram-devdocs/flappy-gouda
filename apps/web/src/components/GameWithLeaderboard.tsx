@@ -140,7 +140,15 @@ export function GameWithLeaderboard() {
         });
       },
       onNicknameCheck: (name: string) => service.checkNickname(name),
-      onNicknameClear: clearNickname,
+      onNicknameClear: () => {
+        clearNickname();
+        try {
+          localStorage.clear();
+        } catch {
+          /* storage unavailable */
+        }
+        queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+      },
     }),
     [service, setNickname, clearNickname, queryClient],
   );

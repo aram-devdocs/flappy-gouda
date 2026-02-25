@@ -123,6 +123,72 @@ describe('FlappyGoudaGame', () => {
     render(<FlappyGoudaGame onBestScoreChange={onBestScoreChange} />);
     expect(onBestScoreChange).toHaveBeenCalledWith({ easy: 3, normal: 10, hard: 0 });
   });
+
+  it('shows confirmation modal when Reset Nickname is clicked', () => {
+    const onNicknameClear = vi.fn();
+    render(
+      <FlappyGoudaGame
+        nickname="ABC"
+        leaderboardCallbacks={{
+          onScoreSubmit: vi.fn(),
+          onNicknameSet: vi.fn(),
+          onNicknameCheck: vi.fn(),
+          onNicknameClear,
+        }}
+      />,
+    );
+    // Open settings menu
+    fireEvent.click(screen.getByRole('button', { name: /Difficulty/ }));
+    // Click "Reset Nickname"
+    fireEvent.click(screen.getByText('Reset Nickname'));
+    // Should show confirmation modal, not immediately clear
+    expect(onNicknameClear).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Confirm reset')).toBeDefined();
+    expect(screen.getByText('Reset Everything?')).toBeDefined();
+  });
+
+  it('clears nickname when reset is confirmed', () => {
+    const onNicknameClear = vi.fn();
+    render(
+      <FlappyGoudaGame
+        nickname="ABC"
+        leaderboardCallbacks={{
+          onScoreSubmit: vi.fn(),
+          onNicknameSet: vi.fn(),
+          onNicknameCheck: vi.fn(),
+          onNicknameClear,
+        }}
+      />,
+    );
+    // Open settings -> Reset Nickname -> Confirm
+    fireEvent.click(screen.getByRole('button', { name: /Difficulty/ }));
+    fireEvent.click(screen.getByText('Reset Nickname'));
+    fireEvent.click(screen.getByText('Reset'));
+    expect(onNicknameClear).toHaveBeenCalledOnce();
+    expect(mockResume).toHaveBeenCalled();
+  });
+
+  it('returns to settings menu when reset is cancelled', () => {
+    const onNicknameClear = vi.fn();
+    render(
+      <FlappyGoudaGame
+        nickname="ABC"
+        leaderboardCallbacks={{
+          onScoreSubmit: vi.fn(),
+          onNicknameSet: vi.fn(),
+          onNicknameCheck: vi.fn(),
+          onNicknameClear,
+        }}
+      />,
+    );
+    // Open settings -> Reset Nickname -> Cancel
+    fireEvent.click(screen.getByRole('button', { name: /Difficulty/ }));
+    fireEvent.click(screen.getByText('Reset Nickname'));
+    fireEvent.click(screen.getByText('Cancel'));
+    expect(onNicknameClear).not.toHaveBeenCalled();
+    // Should be back at settings menu
+    expect(screen.getByLabelText('Settings')).toBeDefined();
+  });
 });
 
 describe('GameErrorBoundary', () => {

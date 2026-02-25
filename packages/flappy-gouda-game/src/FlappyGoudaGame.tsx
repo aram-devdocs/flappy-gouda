@@ -8,6 +8,7 @@ import {
   GameLayout,
   GameOverScreen,
   NicknameModal,
+  ResetConfirmModal,
   SettingsMenu,
   TitleScreen,
 } from '@repo/ui';
@@ -86,6 +87,8 @@ export function FlappyGoudaGame({
     handleSettingsClose,
     openDifficultyFromMenu,
     handleNicknameClear,
+    handleResetConfirm,
+    handleResetCancel,
     handlePlay,
   } = useGameCallbacks({
     flap,
@@ -147,6 +150,11 @@ export function FlappyGoudaGame({
           visible={settingsView === 'difficulty'}
           onSelect={handleDifficultySelect}
           onClose={handleSettingsClose}
+        />
+        <ResetConfirmModal
+          visible={settingsView === 'confirm-reset'}
+          onConfirm={handleResetConfirm}
+          onCancel={handleResetCancel}
         />
         {hasLeaderboard && !leaderboardExpanded && (
           <LeaderboardOverlay leaderboard={leaderboard} gameState={state} />

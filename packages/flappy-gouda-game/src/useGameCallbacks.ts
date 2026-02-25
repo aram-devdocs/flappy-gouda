@@ -2,7 +2,7 @@ import type { DifficultyKey } from '@repo/types';
 import { useCallback } from 'react';
 
 /** Which settings panel is currently shown. */
-export type SettingsView = 'closed' | 'menu' | 'difficulty';
+export type SettingsView = 'closed' | 'menu' | 'difficulty' | 'confirm-reset';
 
 interface GameCallbackDeps {
   flap: () => void;
@@ -37,7 +37,7 @@ export function useGameCallbacks(deps: GameCallbackDeps) {
   }, [flap, settingsView]);
 
   const handleEscape = useCallback(() => {
-    if (settingsView === 'difficulty') {
+    if (settingsView === 'difficulty' || settingsView === 'confirm-reset') {
       setSettingsView('menu');
     } else if (settingsView === 'menu') {
       setSettingsView('closed');
@@ -93,10 +93,18 @@ export function useGameCallbacks(deps: GameCallbackDeps) {
   }, [setSettingsView]);
 
   const handleNicknameClear = useCallback(() => {
+    setSettingsView('confirm-reset');
+  }, [setSettingsView]);
+
+  const handleResetConfirm = useCallback(() => {
     onNicknameClear?.();
     setSettingsView('closed');
     resume();
   }, [onNicknameClear, setSettingsView, resume]);
+
+  const handleResetCancel = useCallback(() => {
+    setSettingsView('menu');
+  }, [setSettingsView]);
 
   const handlePlay = useCallback(() => {
     flap();
@@ -112,6 +120,8 @@ export function useGameCallbacks(deps: GameCallbackDeps) {
     handleSettingsClose,
     openDifficultyFromMenu,
     handleNicknameClear,
+    handleResetConfirm,
+    handleResetCancel,
     handlePlay,
   };
 }

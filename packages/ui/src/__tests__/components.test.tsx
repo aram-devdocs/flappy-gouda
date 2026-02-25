@@ -7,6 +7,7 @@ import { GameFooter } from '../atoms/GameFooter';
 import { ScoreDisplay } from '../atoms/ScoreDisplay';
 import { DifficultyBadge } from '../molecules/DifficultyBadge';
 import { DifficultyPicker } from '../molecules/DifficultyPicker';
+import { ResetConfirmModal } from '../molecules/ResetConfirmModal';
 import { SettingsMenu } from '../molecules/SettingsMenu';
 import { ErrorFallback } from '../organisms/ErrorFallback';
 import { GameContainer } from '../organisms/GameContainer';
@@ -286,6 +287,39 @@ describe('SettingsMenu', () => {
     const panel = screen.getByRole('menu');
     fireEvent.keyDown(panel, { key: 'Escape' });
     expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
+describe('ResetConfirmModal', () => {
+  const defaultProps = {
+    onConfirm: vi.fn(),
+    onCancel: vi.fn(),
+  };
+
+  it('renders confirmation dialog when visible', () => {
+    render(<ResetConfirmModal {...defaultProps} visible />);
+    expect(screen.getByLabelText('Confirm reset')).toBeDefined();
+    expect(screen.getByText('Reset Everything?')).toBeDefined();
+    expect(screen.getByText(/clear your nickname/)).toBeDefined();
+  });
+
+  it('returns null when visible is false', () => {
+    const { container } = render(<ResetConfirmModal {...defaultProps} visible={false} />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('calls onConfirm when Reset is clicked', () => {
+    const onConfirm = vi.fn();
+    render(<ResetConfirmModal {...defaultProps} onConfirm={onConfirm} visible />);
+    fireEvent.click(screen.getByText('Reset'));
+    expect(onConfirm).toHaveBeenCalledOnce();
+  });
+
+  it('calls onCancel when Cancel is clicked', () => {
+    const onCancel = vi.fn();
+    render(<ResetConfirmModal {...defaultProps} onCancel={onCancel} visible />);
+    fireEvent.click(screen.getByText('Cancel'));
+    expect(onCancel).toHaveBeenCalledOnce();
   });
 });
 
