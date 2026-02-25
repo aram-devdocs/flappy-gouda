@@ -22,8 +22,28 @@ export function DemoHeader() {
         boxShadow: SHADOW.dropdown,
       }}
     >
-      <img src="/assets/logos/vegan-gouda-games.png" alt="Vegan Gouda Games" height={48} />
       <div
+        style={{
+          height: '80px',
+          width: '200px',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <img
+          src="/assets/logos/vegan-gouda-games.png"
+          alt="Vegan Gouda Games"
+          style={{
+            height: '280px',
+            filter: 'brightness(0) invert(1)',
+            marginTop: SPACING[6],
+          }}
+        />
+      </div>
+      <div
+        aria-hidden="true"
         style={{
           height: '1px',
           width: '64px',
@@ -32,7 +52,7 @@ export function DemoHeader() {
           margin: `${SPACING[2]} 0`,
         }}
       />
-      <span
+      <h1
         style={{
           color: COLOR_TOKENS.cyan,
           fontFamily: FONT_FAMILY.heading,
@@ -40,10 +60,11 @@ export function DemoHeader() {
           fontWeight: FONT_WEIGHT.bold,
           textTransform: 'uppercase',
           letterSpacing: '0.25em',
+          margin: 0,
         }}
       >
         Flappy Gouda
-      </span>
+      </h1>
     </header>
   );
 }

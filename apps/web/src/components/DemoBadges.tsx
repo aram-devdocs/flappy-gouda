@@ -1,7 +1,5 @@
 import { SPACING } from '@repo/flappy-gouda-game';
-
-const GITHUB_URL = 'https://github.com/aram-devdocs/flappy-gouda';
-const STORYBOOK_URL = 'https://flappy-gouda.aramhammoudeh.com/storybook/';
+import { BADGES } from '../badge-data';
 
 export function DemoBadges() {
   return (
@@ -15,20 +13,17 @@ export function DemoBadges() {
         flexWrap: 'wrap',
       }}
     >
-      <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
-        <img
-          src="https://img.shields.io/badge/GitHub-flappy--gouda-181717?logo=github&style=flat-square"
-          alt="GitHub"
-          height={20}
-        />
-      </a>
-      <a href={STORYBOOK_URL} target="_blank" rel="noopener noreferrer">
-        <img
-          src="https://img.shields.io/badge/Storybook-live-FF4785?logo=storybook&style=flat-square"
-          alt="Storybook"
-          height={20}
-        />
-      </a>
+      {BADGES.map((badge) => (
+        <a
+          key={badge.alt}
+          href={badge.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={badge.label}
+        >
+          <img src={badge.imgSrc} alt={badge.alt} height={20} />
+        </a>
+      ))}
     </div>
   );
 }

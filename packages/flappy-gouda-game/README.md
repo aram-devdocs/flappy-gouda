@@ -1,7 +1,7 @@
 # flappy-gouda-game
 
 [![npm](https://img.shields.io/npm/v/flappy-gouda-game?style=flat-square&logo=npm)](https://www.npmjs.com/package/flappy-gouda-game)
-[![GitHub](https://img.shields.io/badge/GitHub-flappy--nature-181717?logo=github&style=flat-square)](https://github.com/aram-devdocs/flappy-gouda)
+[![GitHub](https://img.shields.io/badge/GitHub-flappy--gouda-181717?logo=github&style=flat-square)](https://github.com/aram-devdocs/flappy-gouda)
 [![Storybook](https://img.shields.io/badge/Storybook-live-FF4785?logo=storybook&style=flat-square)](https://flappy-gouda.aramhammoudeh.com/storybook/)
 [![CI](https://img.shields.io/github/actions/workflow/status/aram-devdocs/flappy-gouda/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/aram-devdocs/flappy-gouda/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](https://github.com/aram-devdocs/flappy-gouda/blob/main/LICENSE)

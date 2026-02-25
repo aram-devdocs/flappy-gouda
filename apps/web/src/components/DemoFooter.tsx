@@ -14,6 +14,7 @@ export function DemoFooter() {
       }}
     >
       <div
+        aria-hidden="true"
         style={{
           height: '1px',
           width: '64px',
@@ -31,13 +32,25 @@ export function DemoFooter() {
           gap: SPACING[1],
         }}
       >
-        <img
-          src="/assets/logos/vegan-gouda-leaf.png"
-          alt="Vegan Gouda Development"
-          width={28}
-          height={28}
-          style={{ opacity: OPACITY.strong }}
-        />
+        <div
+          style={{
+            height: '28px',
+            width: '80px',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <img
+            src="/assets/logos/vegan-gouda-leaf.png"
+            alt="Vegan Gouda Development"
+            style={{
+              height: '130px',
+              filter: 'brightness(0) invert(1)',
+            }}
+          />
+        </div>
         <span
           style={{
             fontSize: FONT_SIZE.xs,
@@ -64,6 +77,7 @@ export function DemoFooter() {
           href="https://github.com/aram-devdocs"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="aramhammoudeh on GitHub (opens in new tab)"
           style={{
             color: COLOR_TOKENS.cyan,
             textDecoration: 'underline',

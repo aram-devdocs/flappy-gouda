@@ -29,7 +29,7 @@ export function DemoPage({ children }: DemoPageProps) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: SPACING[6],
+          padding: `${SPACING[4]} ${SPACING[6]}`,
         }}
       >
         {children}
