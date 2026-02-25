@@ -1,6 +1,6 @@
 {
   "name": "@repo/flappy-gouda-game",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A drop-in canvas-based Flappy Bird game component for React 18+",
   "keywords": ["flappy-bird", "game", "canvas", "react", "react-component", "typescript"],
   "author": "Aram Hammoudeh",
