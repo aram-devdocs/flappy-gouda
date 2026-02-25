@@ -1,8 +1,8 @@
 import { COLOR_TOKENS, FONT_FAMILY, SPACING } from '@repo/flappy-nature-game';
 import type { ReactNode } from 'react';
-import { DemoBadges } from './DemoBadges.js';
-import { DemoFooter } from './DemoFooter.js';
-import { DemoHeader } from './DemoHeader.js';
+import { DemoBadges } from './DemoBadges';
+import { DemoFooter } from './DemoFooter';
+import { DemoHeader } from './DemoHeader';
 
 interface DemoPageProps {
   children: ReactNode;
@@ -14,8 +14,8 @@ export function DemoPage({ children }: DemoPageProps) {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
-        overflow: 'hidden',
+        minHeight: '100%',
+        overflowX: 'hidden',
         background: `linear-gradient(to bottom, ${COLOR_TOKENS.lavender}, ${COLOR_TOKENS.lavender} 40%, ${COLOR_TOKENS.light})`,
         fontFamily: FONT_FAMILY.body,
       }}
