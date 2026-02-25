@@ -6,3 +6,5 @@ export { useScoreMigration } from './useScoreMigration.js';
 export type { UseScoreMigrationReturn } from './useScoreMigration.js';
 export { useNickname } from './useNickname.js';
 export type { UseNicknameReturn } from './useNickname.js';
+export { useDebugMetrics } from './useDebugMetrics.js';
+export type { UseDebugMetricsReturn } from './useDebugMetrics.js';

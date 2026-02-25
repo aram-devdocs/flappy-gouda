@@ -32,6 +32,18 @@ export type { EngineEvents, EngineEventName, EngineConfig } from './engine';
 export type { FlappyNatureGameProps } from './props';
 
 export type {
+  DebugFrameSnapshot,
+  DebugFrameStats,
+  DebugEntityCounts,
+  DebugSystemInfo,
+  DebugLogEntry,
+  DebugMetricsSnapshot,
+  DebugRecordingSession,
+  DebugRecording,
+  DebugControls,
+} from './debug';
+
+export type {
   LeaderboardEntry,
   NicknameCheckResult,
   LeaderboardConnectionStatus,

@@ -1,23 +1,18 @@
-import type { Bird, Cloud, DifficultyKey, EngineConfig } from '@repo/types';
-import type { EngineEventName, EngineEvents, GameColors, GameConfig, Pipe } from '@repo/types';
+import type { Bird, Cloud, DifficultyKey, EngineConfig, EngineEventName } from '@repo/types';
+import type { EngineEvents, GameColors, GameConfig, Pipe } from '@repo/types';
 import type { BackgroundSystem } from './background.js';
 import type { CachedFonts } from './cache.js';
 import { DEFAULT_CONFIG, PIPE_POOL_SIZE, applyDifficulty, validateConfig } from './config.js';
+import { DebugMetricsCollector } from './debug-metrics.js';
 import { EngineEventEmitter } from './engine-events.js';
-import { resetEngine, syncPrevBird } from './engine-lifecycle.js';
+import { engineDraw, engineUpdate } from './engine-frame.js';
+import { handleFlap, resetEngine, syncPrevBird } from './engine-lifecycle.js';
 import { EngineLoop } from './engine-loop.js';
 import { createBgSystem, createRenderer, initClouds, setupCanvas } from './engine-setup.js';
 import { EngineState } from './engine-state.js';
 import { EngineError } from './errors.js';
 import { loadHeartImage } from './heart.js';
 import { loadBestScores, loadDifficulty } from './persistence.js';
-import {
-  checkGroundCollision,
-  spawnPipe,
-  updateBird,
-  updateClouds,
-  updatePipes,
-} from './physics.js';
 import { hitTestSettingsIcon } from './renderer-entities.js';
 import type { Renderer } from './renderer.js';
 import { resolveEngineConfig } from './sanitize.js';
@@ -40,6 +35,7 @@ export class FlappyEngine {
   private loop = new EngineLoop(this.events);
   private bg: BackgroundSystem;
   private renderer: Renderer;
+  private debugCollector: DebugMetricsCollector | null = null;
   constructor(canvas: HTMLCanvasElement, engineConfig?: EngineConfig) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
@@ -57,6 +53,7 @@ export class FlappyEngine {
     validateConfig(this.config);
     this.bg = createBgSystem(this.config, this.bannerTexts);
     this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
+    if (engineConfig?.enableDebug) this.debugCollector = new DebugMetricsCollector(this.events);
   }
   async start(): Promise<void> {
     this.dpr = setupCanvas(this.canvas, this.ctx);
@@ -78,6 +75,7 @@ export class FlappyEngine {
     this.renderer.prerenderAllClouds(this.clouds, this.bg);
     this.state.resetGameState(this.bird, this.config);
     syncPrevBird(this.prevBird, this.bird);
+    this.debugCollector?.initSystemInfo(this.canvas, this.dpr);
     this.loop.begin();
     this.loop.tick(
       performance.now(),
@@ -90,24 +88,11 @@ export class FlappyEngine {
   }
   destroy(): void {
     this.loop.stop();
+    this.debugCollector?.dispose();
     this.events.clearAll();
   }
   flap(): void {
-    if (this.state.state === 'paused') return;
-    if (this.state.state === 'idle') {
-      this.state.setState('play');
-      this.bird.vy = this.config.flapForce;
-      this.state.lastPipeTime = performance.now();
-    } else if (this.state.state === 'play') {
-      this.bird.vy = this.config.flapForce;
-    } else if (this.state.state === 'dead') {
-      if (performance.now() - this.state.deadTime > this.config.resetDelay) {
-        this.doReset();
-        this.state.setState('play');
-        this.bird.vy = this.config.flapForce;
-        this.state.lastPipeTime = performance.now();
-      }
-    }
+    handleFlap(this.state, this.bird, this.config, () => this.doReset());
   }
   setDifficulty(key: DifficultyKey): void {
     this.state.setDifficulty(key, this.config);
@@ -155,45 +140,54 @@ export class FlappyEngine {
     this.settingsIconHovered = hitTestSettingsIcon(logicalX, logicalY, this.config.width);
     return this.settingsIconHovered;
   }
+  getDebugCollector(): DebugMetricsCollector | null {
+    return this.debugCollector;
+  }
+  startDebugRecording(): void {
+    this.debugCollector?.startRecording();
+  }
+  stopDebugRecording() {
+    return this.debugCollector?.stopRecording() ?? null;
+  }
   private doReset(): void {
     resetEngine(this.state, this.loop, this.bird, this.prevBird, this.config, (n) => {
       this.pipeActiveCount = n;
     });
   }
+  private updateMs = 0;
   private update(dt: number, now: number): void {
-    this.loop.globalTime = now;
-    updateClouds(this.clouds, this.config, dt);
-    this.bg.update(dt, now, this.state.state === 'play', this.loop.reducedMotion);
-    if (this.state.state !== 'play') return;
-    syncPrevBird(this.prevBird, this.bird);
-    updateBird(this.bird, this.config, dt);
-    if (checkGroundCollision(this.bird, this.config)) {
-      this.state.die();
-      return;
-    }
-    if (now - this.state.lastPipeTime > this.config.pipeSpawn) {
-      this.pipeActiveCount = spawnPipe(this.pipePool, this.pipeActiveCount, this.config);
-      this.state.lastPipeTime = now;
-    }
-    const r = updatePipes(this.pipePool, this.pipeActiveCount, this.bird, this.config, dt);
+    const r = engineUpdate(
+      this.loop,
+      this.state,
+      this.config,
+      this.bird,
+      this.prevBird,
+      this.clouds,
+      this.bg,
+      this.pipePool,
+      this.pipeActiveCount,
+      this.debugCollector,
+      dt,
+      now,
+    );
     this.pipeActiveCount = r.activeCount;
-    if (r.scoreInc > 0) this.state.setScore(this.state.score + r.scoreInc);
-    if (r.died) this.state.die();
+    this.updateMs = r.updateMs;
   }
   private draw(now: number): void {
-    this.renderer.drawSky();
-    this.renderer.drawBackground(this.bg, this.loop.globalTime);
-    this.renderer.drawNearClouds(this.clouds);
-    this.renderer.drawPipes(this.pipePool, this.pipeActiveCount);
-    this.renderer.drawGround(this.bg);
-    if (this.state.state !== 'idle') {
-      const a = this.loop.alpha;
-      const y = this.prevBird.y + (this.bird.y - this.prevBird.y) * a;
-      const rot = this.prevBird.rot + (this.bird.rot - this.prevBird.rot) * a;
-      this.renderer.drawBird(y, rot);
-      this.renderer.drawScore(this.state.score);
-      this.renderer.drawSettingsIcon(this.settingsIconHovered);
-    }
-    this.loop.updateFps(now);
+    engineDraw(
+      this.loop,
+      this.state,
+      this.renderer,
+      this.bg,
+      this.clouds,
+      this.pipePool,
+      this.pipeActiveCount,
+      this.bird,
+      this.prevBird,
+      this.settingsIconHovered,
+      this.debugCollector,
+      this.updateMs,
+      now,
+    );
   }
 }

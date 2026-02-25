@@ -15,7 +15,7 @@ export function DemoPage({ children }: DemoPageProps) {
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
-        background: `linear-gradient(to right bottom, ${COLOR_TOKENS.light}, ${COLOR_TOKENS.white})`,
+        background: `linear-gradient(to bottom, ${COLOR_TOKENS.lavender}, ${COLOR_TOKENS.lavender} 40%, ${COLOR_TOKENS.light})`,
         fontFamily: FONT_FAMILY.body,
       }}
     >

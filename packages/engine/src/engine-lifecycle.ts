@@ -17,6 +17,30 @@ export function resetEngine(
   syncPrevBird(prevBird, bird);
 }
 
+/** Execute a flap action based on current game state. */
+export function handleFlap(
+  state: EngineState,
+  bird: Bird,
+  config: GameConfig,
+  doReset: () => void,
+): void {
+  if (state.state === 'paused') return;
+  if (state.state === 'idle') {
+    state.setState('play');
+    bird.vy = config.flapForce;
+    state.lastPipeTime = performance.now();
+  } else if (state.state === 'play') {
+    bird.vy = config.flapForce;
+  } else if (state.state === 'dead') {
+    if (performance.now() - state.deadTime > config.resetDelay) {
+      doReset();
+      state.setState('play');
+      bird.vy = config.flapForce;
+      state.lastPipeTime = performance.now();
+    }
+  }
+}
+
 /** Copy bird snapshot into prevBird for interpolation. */
 export function syncPrevBird(prevBird: Bird, bird: Bird): void {
   prevBird.y = bird.y;

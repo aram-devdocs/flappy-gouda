@@ -1,4 +1,9 @@
 import {
+  DebugBottomSheet,
+  type DebugControls,
+  type DebugMetricsSnapshot,
+  DebugPanel,
+  DebugTab,
   type DifficultyKey,
   FlappyNatureGame,
   type GameState,
@@ -13,11 +18,15 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint.js';
+import { useDebugRecording } from '../hooks/useDebugRecording.js';
 import { useLeaderboard } from '../hooks/useLeaderboard.js';
 import { useLeaderboardRealtime } from '../hooks/useLeaderboardRealtime.js';
 import { useLiveScores } from '../hooks/useLiveScores.js';
 import { useMergedLeaderboard } from '../hooks/useMergedLeaderboard.js';
 import { useLeaderboardService } from './LeaderboardProvider.js';
+
+const DEBUG_PANEL_W = '280px';
+const TRANSITION = 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
 
 export function GameWithLeaderboard() {
   const service = useLeaderboardService();
@@ -29,6 +38,12 @@ export function GameWithLeaderboard() {
   const [liveScore, setLiveScore] = useState<number | null>(null);
   const [bestScoreForDiff, setBestScoreForDiff] = useState(0);
   const gameStateRef = useRef<GameState>('idle');
+
+  // Debug state
+  const [debugMetrics, setDebugMetrics] = useState<DebugMetricsSnapshot | null>(null);
+  const [debugOpen, setDebugOpen] = useState(false);
+  const debugControlsRef = useRef<DebugControls | null>(null);
+  const rec = useDebugRecording(debugControlsRef);
 
   const windowConfig = useMemo(
     () => ({
@@ -55,8 +70,25 @@ export function GameWithLeaderboard() {
     [mergedEntries, playerEntry, isLoading, connectionStatus],
   );
 
-  const toggleSheet = useCallback(() => setSheetOpen((prev) => !prev), []);
+  // --- Toggles with mutual exclusivity on mobile ---
+
+  const toggleSheet = useCallback(() => {
+    setSheetOpen((prev) => {
+      if (!prev && breakpoint === 'mobile') setDebugOpen(false);
+      return !prev;
+    });
+  }, [breakpoint]);
+
   const closeSheet = useCallback(() => setSheetOpen(false), []);
+
+  const toggleDebug = useCallback(() => {
+    setDebugOpen((prev) => {
+      if (!prev && breakpoint === 'mobile') setSheetOpen(false);
+      return !prev;
+    });
+  }, [breakpoint]);
+
+  // --- Game callbacks ---
 
   const handleScoreChange = useCallback(
     (score: number) => {
@@ -112,11 +144,57 @@ export function GameWithLeaderboard() {
   );
 
   const panelWidth = breakpoint === 'tablet' ? '180px' : '220px';
+  const hasDebug = debugMetrics != null;
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Debug tab - outside left edge */}
+      {hasDebug && (
+        <DebugTab
+          visible
+          expanded={debugOpen}
+          isRecording={rec.isRecording}
+          onClick={toggleDebug}
+          style={{
+            right: '100%',
+            left: 'auto',
+            borderRadius: `${RADIUS.lg} 0 0 ${RADIUS.lg}`,
+          }}
+        />
+      )}
+
+      {/* Debug panel - slides left (desktop / tablet) */}
+      {breakpoint !== 'mobile' && hasDebug && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: '100%',
+            bottom: 0,
+            width: debugOpen ? DEBUG_PANEL_W : '0px',
+            overflow: 'hidden',
+            transition: TRANSITION,
+          }}
+        >
+          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: DEBUG_PANEL_W }}>
+            <DebugPanel
+              visible
+              metrics={debugMetrics}
+              isRecording={rec.isRecording}
+              hasRecording={rec.hasRecording}
+              onStartRecording={rec.start}
+              onStopRecording={rec.stop}
+              onExportRecording={rec.exportRecording}
+            />
+          </div>
+        </div>
+      )}
+
       <FlappyNatureGame
         showFps
+        showDebug
+        onDebugMetrics={setDebugMetrics}
+        debugControlsRef={debugControlsRef}
         leaderboard={leaderboardData}
         leaderboardCallbacks={callbacks}
         leaderboardExpanded={sheetOpen}
@@ -126,6 +204,8 @@ export function GameWithLeaderboard() {
         onStateChange={handleStateChange}
         onBestScoreChange={handleBestScoreChange}
       />
+
+      {/* Leaderboard tab - outside right edge */}
       <LeaderboardTab
         visible
         expanded={sheetOpen}
@@ -133,15 +213,25 @@ export function GameWithLeaderboard() {
         connectionStatus={connectionStatus}
         style={{ left: '100%', right: 'auto', borderRadius: `0 ${RADIUS.lg} ${RADIUS.lg} 0` }}
       />
+
       {breakpoint === 'mobile' ? (
-        <LeaderboardBottomSheet
-          visible={sheetOpen}
-          items={windowedItems}
-          playerEntryId={playerEntry?.id ?? null}
-          isLoading={isLoading}
-          difficulty={difficulty}
-          connectionStatus={connectionStatus}
-        />
+        <>
+          <LeaderboardBottomSheet
+            visible={sheetOpen}
+            items={windowedItems}
+            playerEntryId={playerEntry?.id ?? null}
+            isLoading={isLoading}
+            difficulty={difficulty}
+            connectionStatus={connectionStatus}
+          />
+          {hasDebug && (
+            <DebugBottomSheet
+              visible={debugOpen}
+              metrics={debugMetrics}
+              isRecording={rec.isRecording}
+            />
+          )}
+        </>
       ) : (
         <div
           style={{
@@ -151,7 +241,7 @@ export function GameWithLeaderboard() {
             bottom: 0,
             width: sheetOpen ? panelWidth : '0px',
             overflow: 'hidden',
-            transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: TRANSITION,
           }}
         >
           <div style={{ position: 'relative', width: panelWidth, height: '100%' }}>

@@ -6,6 +6,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export interface UseGameEngineReturn {
   /** Ref to attach to the game canvas element. */
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  /** Ref to the engine instance (for debug hooks). */
+  engineRef: React.RefObject<FlappyEngine | null>;
+  /** Whether the engine has been created and started. */
+  engineReady: boolean;
   /** Current game lifecycle state. */
   state: GameState;
   /** Current score for the active run. */
@@ -46,6 +50,7 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
   const [bestScores, setBestScores] = useState<BestScores>({ easy: 0, normal: 0, hard: 0 });
   const [difficulty, setDifficultyState] = useState<DifficultyKey>(config?.difficulty ?? 'normal');
   const [fps, setFps] = useState(0);
+  const [engineReady, setEngineReady] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: engine should only be created once on mount, config is an object ref
   useEffect(() => {
@@ -66,10 +71,12 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
     setBestScores(engine.getBestScores());
 
     engine.start();
+    setEngineReady(true);
 
     return () => {
       engine.destroy();
       engineRef.current = null;
+      setEngineReady(false);
     };
   }, []);
 
@@ -103,6 +110,8 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
 
   return {
     canvasRef,
+    engineRef,
+    engineReady,
     state,
     score,
     bestScores,

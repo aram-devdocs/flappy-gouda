@@ -4,6 +4,7 @@ import { DEFAULT_BANNERS } from '../banners.js';
 import { DEFAULT_COLORS, buildFontCache } from '../cache.js';
 import { BASE_H, BASE_W, DEFAULT_CONFIG } from '../config.js';
 import { EngineEventEmitter } from '../engine-events.js';
+import { syncPrevBird } from '../engine-lifecycle.js';
 import { EngineLoop } from '../engine-loop.js';
 import { createBgSystem, createRenderer, initClouds, setupCanvas } from '../engine-setup.js';
 import { EngineState } from '../engine-state.js';
@@ -1020,5 +1021,39 @@ describe('createRenderer', () => {
     expect(typeof renderer.drawPipes).toBe('function');
     expect(typeof renderer.drawNearClouds).toBe('function');
     expect(typeof renderer.drawBackground).toBe('function');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Bird flicker regression (prevBird/bird divergence during non-play states)
+// ---------------------------------------------------------------------------
+
+describe('bird flicker regression', () => {
+  it('syncPrevBird eliminates interpolation oscillation for divergent birds', () => {
+    // Arrange -- simulate the post-transition state where prevBird and bird diverge
+    const prevBird = makeBird({ y: 200, vy: 0, rot: 0 });
+    const bird = makeBird({ y: 210, vy: -3, rot: 0.15 });
+
+    // Act -- sync prevBird (what the fix does on every non-play tick)
+    syncPrevBird(prevBird, bird);
+
+    // Assert -- interpolation is now stable regardless of alpha
+    for (const alpha of [0, 0.25, 0.5, 0.75, 1]) {
+      const interpolatedY = prevBird.y + (bird.y - prevBird.y) * alpha;
+      const interpolatedRot = prevBird.rot + (bird.rot - prevBird.rot) * alpha;
+      expect(interpolatedY).toBe(bird.y);
+      expect(interpolatedRot).toBe(bird.rot);
+    }
+  });
+
+  it('without sync, divergent birds produce unstable interpolation', () => {
+    // Arrange -- divergent state (the bug scenario)
+    const prevBird = makeBird({ y: 200, vy: 0, rot: 0 });
+    const bird = makeBird({ y: 210, vy: -3, rot: 0.15 });
+
+    // Act & Assert -- different alpha values produce different positions
+    const y0 = prevBird.y + (bird.y - prevBird.y) * 0;
+    const y1 = prevBird.y + (bird.y - prevBird.y) * 1;
+    expect(y0).not.toBe(y1);
   });
 });

@@ -11,6 +11,7 @@ export const COLOR_TOKENS = {
   white: '#FFFFFF',
   midviolet: '#4B00A0',
   skyBottom: '#F5F0F8',
+  lavender: '#D8DAF5',
 } as const;
 
 /** RGB channel strings for composing rgba() values. */

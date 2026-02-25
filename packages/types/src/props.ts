@@ -1,3 +1,4 @@
+import type { DebugControls, DebugMetricsSnapshot } from './debug';
 import type { BestScores, DifficultyKey, GameColors, GameState } from './game';
 import type { LeaderboardProps } from './leaderboard';
 
@@ -23,4 +24,10 @@ export interface FlappyNatureGameProps extends LeaderboardProps {
   className?: string;
   /** Whether to show the FPS counter overlay. */
   showFps?: boolean;
+  /** Whether to show the debug analytics panel. */
+  showDebug?: boolean;
+  /** Called when debug metrics are updated (~8 times/sec when showDebug is true). */
+  onDebugMetrics?: (metrics: DebugMetricsSnapshot) => void;
+  /** Ref populated with recording controls when the debug collector is ready. */
+  debugControlsRef?: { current: DebugControls | null };
 }

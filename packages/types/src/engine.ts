@@ -1,3 +1,4 @@
+import type { DebugMetricsSnapshot } from './debug';
 import type { BestScores, DifficultyKey, GameColors, GameState } from './game';
 
 /** Event signatures emitted by the game engine. */
@@ -12,6 +13,8 @@ export interface EngineEvents {
   fpsUpdate: (fps: number) => void;
   /** Fired when the difficulty level changes. */
   difficultyChange: (key: DifficultyKey) => void;
+  /** Fired ~8 times per second with aggregated debug metrics. */
+  debugUpdate: (snapshot: DebugMetricsSnapshot) => void;
 }
 
 /** Union of all engine event names. */
@@ -27,4 +30,6 @@ export interface EngineConfig {
   fontFamily?: string;
   /** Initial difficulty level. */
   difficulty?: DifficultyKey;
+  /** Enable the debug metrics collector (zero overhead when off). */
+  enableDebug?: boolean;
 }

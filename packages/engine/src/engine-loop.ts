@@ -13,6 +13,8 @@ export class EngineLoop {
   globalTime = 0;
   alpha = 0;
   reducedMotion = false;
+  lastDelta = 0;
+  lastTickCount = 0;
 
   private fpsFrames = 0;
   private fpsLastTime = 0;
@@ -44,6 +46,7 @@ export class EngineLoop {
     const now = rafTimestamp || performance.now();
     const delta = now - this.frameTime;
     this.frameTime = now;
+    this.lastDelta = delta;
 
     this.accumulator += delta;
     let ticks = 0;
@@ -59,6 +62,7 @@ export class EngineLoop {
       ticks++;
     }
     if (ticks >= MAX_TICKS) this.accumulator = 0;
+    this.lastTickCount = ticks;
 
     this.alpha = this.accumulator / TICK_MS;
 

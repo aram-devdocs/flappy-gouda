@@ -12,6 +12,14 @@ export type { LeaderboardPanelProps } from '@repo/ui';
 export { LeaderboardTab } from '@repo/ui';
 export type { LeaderboardTabProps } from '@repo/ui';
 
+// Re-export debug UI components for external rendering
+export { DebugTab } from '@repo/ui';
+export type { DebugTabProps } from '@repo/ui';
+export { DebugPanel } from '@repo/ui';
+export type { DebugPanelProps } from '@repo/ui';
+export { DebugBottomSheet } from '@repo/ui';
+export type { DebugBottomSheetProps } from '@repo/ui';
+
 // Re-export design tokens for consumer convenience
 export {
   DESIGN_TOKENS,
@@ -45,6 +53,9 @@ export type {
   LeaderboardSeparator,
   LeaderboardWindowEntry,
   LeaderboardWindowItem,
+  DebugMetricsSnapshot,
+  DebugControls,
+  DebugRecording,
 } from '@repo/types';
 
 export { NICKNAME_LENGTH, NICKNAME_PATTERN } from '@repo/types';

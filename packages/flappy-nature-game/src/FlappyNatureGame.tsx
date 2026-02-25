@@ -11,9 +11,11 @@ import {
   ScoreMigrationModal,
   TitleScreen,
 } from '@repo/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GameErrorBoundary } from './GameErrorBoundary.js';
 import { LeaderboardOverlay } from './LeaderboardOverlay.js';
+import { useDebugBridge } from './useDebugBridge.js';
+import { useGameCallbacks } from './useGameCallbacks.js';
 import { useLeaderboardState } from './useLeaderboardState.js';
 
 export function FlappyNatureGame({
@@ -27,6 +29,9 @@ export function FlappyNatureGame({
   onDifficultyChange,
   className,
   showFps = false,
+  showDebug = false,
+  onDebugMetrics,
+  debugControlsRef,
   leaderboard,
   leaderboardCallbacks,
   leaderboardExpanded = false,
@@ -34,6 +39,8 @@ export function FlappyNatureGame({
 }: FlappyNatureGameProps) {
   const {
     canvasRef,
+    engineRef,
+    engineReady,
     state,
     score,
     bestScores,
@@ -50,8 +57,10 @@ export function FlappyNatureGame({
     bannerTexts,
     fontFamily,
     difficulty: initialDifficulty,
+    enableDebug: showDebug,
   });
 
+  useDebugBridge(engineRef, engineReady, showDebug, onDebugMetrics, debugControlsRef);
   const migration = useScoreMigration(bestScores);
   const [pickerOpen, setPickerOpen] = useState(false);
   const lb = useLeaderboardState(state, score, difficulty, nickname, leaderboardCallbacks);
@@ -69,47 +78,26 @@ export function FlappyNatureGame({
     onDifficultyChange?.(difficulty);
   }, [difficulty, onDifficultyChange]);
 
-  const handleFlap = useCallback(() => {
-    if (pickerOpen) return;
-    flap();
-  }, [flap, pickerOpen]);
-
-  const handleEscape = useCallback(() => {
-    if (pickerOpen) {
-      setPickerOpen(false);
-      resume();
-    }
-  }, [pickerOpen, resume]);
-
-  const togglePicker = useCallback(() => {
-    if (pickerOpen) {
-      setPickerOpen(false);
-      resume();
-    } else {
-      pause();
-      setPickerOpen(true);
-    }
-  }, [pickerOpen, pause, resume]);
-
-  const onCanvasInteract = useCallback(
-    (x: number, y: number): boolean => {
-      if (handleCanvasClick(x, y)) {
-        togglePicker();
-        return true;
-      }
-      return false;
-    },
-    [handleCanvasClick, togglePicker],
-  );
-
-  const onCanvasHover = useCallback(
-    (x: number, y: number) => {
-      const hit = handleCanvasHover(x, y);
-      const canvas = canvasRef.current;
-      if (canvas) canvas.style.cursor = hit ? 'pointer' : '';
-    },
-    [handleCanvasHover, canvasRef],
-  );
+  const {
+    handleFlap,
+    handleEscape,
+    togglePicker,
+    onCanvasInteract,
+    onCanvasHover,
+    handleDifficultySelect,
+    handlePickerClose,
+    handlePlay,
+  } = useGameCallbacks({
+    flap,
+    pause,
+    resume,
+    setDifficulty,
+    handleCanvasClick,
+    handleCanvasHover,
+    canvasRef,
+    pickerOpen,
+    setPickerOpen,
+  });
 
   useGameInput({
     onFlap: handleFlap,
@@ -119,23 +107,6 @@ export function FlappyNatureGame({
     canvasRef,
     enabled: !pickerOpen,
   });
-
-  const handleDifficultySelect = useCallback(
-    (key: typeof difficulty) => {
-      setDifficulty(key);
-      setPickerOpen(false);
-    },
-    [setDifficulty],
-  );
-
-  const handlePickerClose = useCallback(() => {
-    setPickerOpen(false);
-    resume();
-  }, [resume]);
-
-  const handlePlay = useCallback(() => {
-    flap();
-  }, [flap]);
 
   const currentBest = bestScores[difficulty] ?? 0;
   const isOverlayVisible = state !== 'play' || pickerOpen || migration.showModal;
