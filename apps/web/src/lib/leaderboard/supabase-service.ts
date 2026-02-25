@@ -24,7 +24,7 @@ export class SupabaseLeaderboardService implements LeaderboardService {
     }
   }
 
-  async getLeaderboard(difficulty: DifficultyKey, limit = 25): Promise<LeaderboardEntry[]> {
+  async getLeaderboard(difficulty: DifficultyKey, limit = 100): Promise<LeaderboardEntry[]> {
     if (!supabase) return [];
     const { data, error } = await supabase
       .from('scores')
@@ -42,38 +42,6 @@ export class SupabaseLeaderboardService implements LeaderboardService {
       difficulty: row.difficulty as DifficultyKey,
       createdAt: row.created_at,
       rank: index + 1,
-    }));
-  }
-
-  async getLeaderboardWindowed(
-    difficulty: DifficultyKey,
-    topCount = 3,
-    surroundCount = 3,
-  ): Promise<LeaderboardEntry[]> {
-    if (!supabase) return [];
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    const { data, error } = await supabase.rpc('get_leaderboard_window', {
-      p_difficulty: difficulty,
-      p_user_id: user?.id ?? null,
-      p_top_count: topCount,
-      p_surround_count: surroundCount,
-    });
-
-    if (error || !data) {
-      // Fall back to regular query if RPC unavailable
-      return this.getLeaderboard(difficulty, 50);
-    }
-
-    return (data as Array<Record<string, unknown>>).map((row) => ({
-      id: row.id as string,
-      nickname: row.nickname as string,
-      score: row.score as number,
-      difficulty: row.difficulty as DifficultyKey,
-      createdAt: row.created_at as string,
-      rank: Number(row.rank),
     }));
   }
 
@@ -215,10 +183,7 @@ export class SupabaseLeaderboardService implements LeaderboardService {
     return { nickname };
   }
 
-  subscribeToScores(
-    difficulty: DifficultyKey,
-    onUpdate: (entries: LeaderboardEntry[]) => void,
-  ): () => void {
+  subscribeToScores(difficulty: DifficultyKey, onUpdate: () => void): () => void {
     if (!supabase) return () => {};
 
     const channel = supabase
@@ -226,15 +191,7 @@ export class SupabaseLeaderboardService implements LeaderboardService {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'scores', filter: `difficulty=eq.${difficulty}` },
-        () => {
-          // Re-fetch full leaderboard on any change
-          this.getLeaderboard(difficulty)
-            .then(onUpdate)
-            .catch((err: unknown) => {
-              // biome-ignore lint/suspicious/noConsole: operational warning for realtime refetch failure
-              console.warn('[leaderboard] realtime refetch failed:', err);
-            });
-        },
+        () => onUpdate(),
       )
       .subscribe();
 

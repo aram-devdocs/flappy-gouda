@@ -3,6 +3,7 @@ import type { LeaderboardEntry, LeaderboardWindowItem } from '@repo/flappy-natur
 interface WindowConfig {
   topCount: number;
   surroundCount: number;
+  showAllThreshold?: number;
 }
 
 /**
@@ -16,11 +17,11 @@ export function computeLeaderboardWindow(
 ): LeaderboardWindowItem[] {
   if (entries.length === 0) return [];
 
-  const { topCount, surroundCount } = config;
-  const maxCompact = topCount + 1 + surroundCount * 2;
+  const { topCount, surroundCount, showAllThreshold } = config;
+  const showAllCutoff = showAllThreshold ?? topCount + 1 + surroundCount * 2;
 
   // If few enough entries, show them all
-  if (entries.length <= maxCompact) {
+  if (entries.length <= showAllCutoff) {
     return entries.map((entry) => ({ type: 'entry' as const, entry }));
   }
 

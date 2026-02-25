@@ -36,15 +36,7 @@ export class LocalLeaderboardService implements LeaderboardService {
     /* no-op */
   }
 
-  async getLeaderboardWindowed(
-    difficulty: DifficultyKey,
-    _topCount?: number,
-    _surroundCount?: number,
-  ): Promise<LeaderboardEntry[]> {
-    return this.getLeaderboard(difficulty);
-  }
-
-  async getLeaderboard(difficulty: DifficultyKey, limit = 25): Promise<LeaderboardEntry[]> {
+  async getLeaderboard(difficulty: DifficultyKey, limit = 100): Promise<LeaderboardEntry[]> {
     const scores = readScores()
       .filter((s) => s.difficulty === difficulty)
       .sort((a, b) => b.score - a.score)
@@ -95,26 +87,10 @@ export class LocalLeaderboardService implements LeaderboardService {
     return { nickname };
   }
 
-  subscribeToScores(
-    difficulty: DifficultyKey,
-    onUpdate: (entries: LeaderboardEntry[]) => void,
-  ): () => void {
+  subscribeToScores(_difficulty: DifficultyKey, onUpdate: () => void): () => void {
     const handler = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY) return;
-      const scores = readScores()
-        .filter((s) => s.difficulty === difficulty)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 25);
-      onUpdate(
-        scores.map((s, i) => ({
-          id: `local-${s.nickname}-${s.difficulty}`,
-          nickname: s.nickname,
-          score: s.score,
-          difficulty: s.difficulty,
-          createdAt: s.createdAt,
-          rank: i + 1,
-        })),
-      );
+      onUpdate();
     };
     window.addEventListener('storage', handler);
     return () => window.removeEventListener('storage', handler);

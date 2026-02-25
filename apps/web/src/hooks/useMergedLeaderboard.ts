@@ -6,6 +6,7 @@ import type { LiveScoreBroadcast } from '../lib/leaderboard/service.js';
 interface WindowConfig {
   topCount: number;
   surroundCount: number;
+  showAllThreshold?: number;
 }
 
 interface MergedLeaderboardResult {

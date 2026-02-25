@@ -14,18 +14,10 @@ export interface LiveScoreBroadcast {
 
 export interface LeaderboardService {
   getLeaderboard(difficulty: DifficultyKey, limit?: number): Promise<LeaderboardEntry[]>;
-  getLeaderboardWindowed?(
-    difficulty: DifficultyKey,
-    topCount?: number,
-    surroundCount?: number,
-  ): Promise<LeaderboardEntry[]>;
   submitScore(score: number, difficulty: DifficultyKey): Promise<LeaderboardEntry>;
   checkNickname(nickname: string): Promise<NicknameCheckResult>;
   registerNickname(nickname: string): Promise<{ nickname: string }>;
-  subscribeToScores(
-    difficulty: DifficultyKey,
-    onUpdate: (entries: LeaderboardEntry[]) => void,
-  ): () => void;
+  subscribeToScores(difficulty: DifficultyKey, onUpdate: () => void): () => void;
   broadcastLiveScore?(score: number, difficulty: DifficultyKey, nickname: string): void;
   subscribeToBroadcasts?(
     difficulty: DifficultyKey,
