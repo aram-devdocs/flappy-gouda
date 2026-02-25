@@ -16,8 +16,16 @@ const TOKEN_FILE = 'packages/types/src/tokens.ts';
 
 const SKIP_DIRS = new Set(['__tests__', 'node_modules', 'dist']);
 
+/** SVG icon components contain illustration-specific colors that are not theme tokens. */
+const SVG_ICON_FILES = new Set(['CheeseIcon.tsx']);
+
 function shouldSkipFile(name: string, rel: string): boolean {
-  return name.includes('.stories.') || name.includes('.test.') || rel === TOKEN_FILE;
+  return (
+    name.includes('.stories.') ||
+    name.includes('.test.') ||
+    rel === TOKEN_FILE ||
+    SVG_ICON_FILES.has(name)
+  );
 }
 
 function scan(dir: string): void {

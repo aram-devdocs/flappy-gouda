@@ -17,9 +17,13 @@ const violations: Violation[] = [];
 
 const SKIP_DIRS = new Set(['__tests__', 'node_modules', 'dist']);
 
+/** SVG icon components contain illustration-specific colors that are not design tokens. */
+const SVG_ICON_FILES = new Set(['CheeseIcon.tsx']);
+
 function shouldSkipFile(name: string, rel: string): boolean {
   if (name.includes('.stories.') || name.includes('.test.')) return true;
   if (rel.startsWith('packages/types/src/tokens')) return true;
+  if (SVG_ICON_FILES.has(name)) return true;
   return false;
 }
 
