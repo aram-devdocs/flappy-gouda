@@ -38,7 +38,7 @@ export function DemoHeader() {
           style={{
             height: '280px',
             filter: 'brightness(0) invert(1)',
-            marginTop: '24px',
+            marginTop: SPACING[6],
           }}
         />
       </div>
