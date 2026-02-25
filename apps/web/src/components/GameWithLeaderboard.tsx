@@ -73,11 +73,9 @@ export function GameWithLeaderboard() {
     (state: GameState) => {
       gameStateRef.current = state;
       if (state === 'play') {
+        setLiveScore(null);
         const svc = service as { resetBroadcastSession?: () => void };
         svc.resetBroadcastSession?.();
-      }
-      if (state === 'dead' || state === 'idle') {
-        setLiveScore(null);
       }
     },
     [service],

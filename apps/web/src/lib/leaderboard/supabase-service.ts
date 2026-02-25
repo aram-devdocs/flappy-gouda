@@ -81,10 +81,17 @@ export class SupabaseLeaderboardService implements LeaderboardService {
     if (!supabase) throw new Error('Supabase not configured');
 
     const parsed = ScoreSubmitSchema.parse({ score, difficulty });
-    const {
+    let {
       data: { session },
     } = await supabase.auth.getSession();
-    if (!session) throw new Error('Not authenticated');
+    if (!session) {
+      const { error: authError } = await supabase.auth.signInAnonymously();
+      if (authError) throw new Error('Not authenticated');
+      ({
+        data: { session },
+      } = await supabase.auth.getSession());
+      if (!session) throw new Error('Not authenticated');
+    }
 
     // Try edge function first (server-side validation)
     const { data, error } = await supabase.functions.invoke('validate-score', {
