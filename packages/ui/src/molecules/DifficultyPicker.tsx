@@ -13,10 +13,6 @@ import {
   cssVar,
 } from '@repo/types';
 
-/** Crimson accent used exclusively for the Souls difficulty option. */
-const SOULS_ACCENT = '#C0392B';
-const SOULS_BG_SUBTLE = 'rgba(192, 57, 43, 0.08)';
-
 /** Props for {@link DifficultyPicker}. */
 interface DifficultyPickerProps {
   /** The currently selected difficulty level. */
@@ -95,8 +91,8 @@ export function DifficultyPicker({
           const isActive = key === currentDifficulty;
           const isSouls = key === 'souls';
           const best = bestScores[key];
-          const activeColor = isSouls ? SOULS_ACCENT : cssVar('violet');
-          const inactiveColor = isSouls ? SOULS_BG_SUBTLE : cssVar('light');
+          const activeColor = isSouls ? cssVar('souls') : cssVar('violet');
+          const inactiveColor = isSouls ? RGBA_TOKENS.soulsBgSubtle : cssVar('light');
           return (
             <button
               key={key}
@@ -112,7 +108,7 @@ export function DifficultyPicker({
                 marginBottom: SPACING[1.5],
                 fontSize: FONT_SIZE.sm,
                 fontWeight: FONT_WEIGHT.bold,
-                color: isActive ? cssVar('white') : isSouls ? SOULS_ACCENT : cssVar('navy'),
+                color: isActive ? cssVar('white') : isSouls ? cssVar('souls') : cssVar('navy'),
                 background: isActive ? activeColor : inactiveColor,
                 border: 'none',
                 borderRadius: RADIUS.md,
