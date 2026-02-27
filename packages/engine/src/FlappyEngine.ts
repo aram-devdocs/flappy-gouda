@@ -74,6 +74,7 @@ export class FlappyEngine {
       x: 0,
       topH: 0,
       scored: false,
+      gap: 0,
     }));
     this.pipeActiveCount = 0;
     this.bird = { y: 0, vy: 0, rot: 0 };

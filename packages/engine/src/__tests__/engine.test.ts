@@ -29,7 +29,7 @@ function makeConfig(overrides: Partial<GameConfig> = {}): GameConfig {
 }
 
 function makePipe(overrides: Partial<Pipe> = {}): Pipe {
-  return { x: 200, topH: 100, scored: false, ...overrides };
+  return { x: 200, topH: 100, scored: false, gap: 162, ...overrides };
 }
 
 // --- physics.ts ---
@@ -249,13 +249,13 @@ describe('persistence', () => {
 
   it('loadBestScores returns zeroed defaults when empty', () => {
     const scores = loadBestScores();
-    expect(scores).toEqual({ easy: 0, normal: 0, hard: 0 });
+    expect(scores).toEqual({ easy: 0, normal: 0, hard: 0, souls: 0 });
   });
 
   it('saveBestScores/loadBestScores round-trip', () => {
-    saveBestScores({ easy: 3, normal: 10, hard: 7 });
+    saveBestScores({ easy: 3, normal: 10, hard: 7, souls: 0 });
     const scores = loadBestScores();
-    expect(scores).toEqual({ easy: 3, normal: 10, hard: 7 });
+    expect(scores).toEqual({ easy: 3, normal: 10, hard: 7, souls: 0 });
   });
 
   it('saveDifficulty/loadDifficulty round-trip', () => {
@@ -277,7 +277,7 @@ describe('persistence', () => {
       removeItem: () => {},
     });
     expect(() => loadBestScores()).not.toThrow();
-    expect(loadBestScores()).toEqual({ easy: 0, normal: 0, hard: 0 });
+    expect(loadBestScores()).toEqual({ easy: 0, normal: 0, hard: 0, souls: 0 });
   });
 });
 

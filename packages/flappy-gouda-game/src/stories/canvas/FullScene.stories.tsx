@@ -126,8 +126,8 @@ function FullScenePreview({ score, birdY }: { score: number; birdY: number }) {
 
       // Pipes
       const pipes: Pipe[] = [
-        { x: 200, topH: 140, scored: false },
-        { x: 330, topH: 200, scored: false },
+        { x: 200, topH: 140, scored: false, gap: 162 },
+        { x: 330, topH: 200, scored: false, gap: 162 },
       ];
       drawPipes(ctx, pipes, 2, 52, 162, H, grads.pipeGrad, lip);
 

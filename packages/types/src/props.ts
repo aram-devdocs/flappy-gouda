@@ -24,6 +24,8 @@ export interface FlappyGoudaGameProps extends LeaderboardProps {
   showFps?: boolean;
   /** Whether to show the debug analytics panel. */
   showDebug?: boolean;
+  /** Enable the hidden Souls difficulty (brutal mode). Disabled by default. */
+  soulsMode?: boolean;
   /** Called when debug metrics are updated (~8 times/sec when showDebug is true). */
   onDebugMetrics?: (metrics: DebugMetricsSnapshot) => void;
   /** Ref populated with recording controls when the debug collector is ready. */

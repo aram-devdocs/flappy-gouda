@@ -165,16 +165,17 @@ describe('GameCanvas', () => {
 describe('DifficultyPicker', () => {
   const defaultProps = {
     currentDifficulty: 'normal' as const,
-    bestScores: { easy: 0, normal: 0, hard: 0 },
+    bestScores: { easy: 0, normal: 0, hard: 0, souls: 0 },
     onSelect: vi.fn(),
     onClose: vi.fn(),
   };
 
-  it('renders all 3 difficulty options when visible', () => {
+  it('renders all difficulty options when visible', () => {
     render(<DifficultyPicker {...defaultProps} visible />);
     expect(screen.getByText('Easy')).toBeDefined();
     expect(screen.getByText('Normal')).toBeDefined();
     expect(screen.getByText('Hard')).toBeDefined();
+    expect(screen.getByText('Souls')).toBeDefined();
   });
 
   it('returns null when visible is false', () => {
@@ -198,7 +199,11 @@ describe('DifficultyPicker', () => {
 
   it('shows best scores when greater than 0', () => {
     render(
-      <DifficultyPicker {...defaultProps} bestScores={{ easy: 5, normal: 12, hard: 0 }} visible />,
+      <DifficultyPicker
+        {...defaultProps}
+        bestScores={{ easy: 5, normal: 12, hard: 0, souls: 0 }}
+        visible
+      />,
     );
     expect(screen.getByText('Best: 5')).toBeDefined();
     expect(screen.getByText('Best: 12')).toBeDefined();

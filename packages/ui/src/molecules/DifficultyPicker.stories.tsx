@@ -15,7 +15,7 @@ const meta: Meta<typeof DifficultyPicker> = {
 export default meta;
 type Story = StoryObj<typeof DifficultyPicker>;
 
-const bestScores = { easy: 10, normal: 5, hard: 0 };
+const bestScores = { easy: 10, normal: 5, hard: 0, souls: 0 };
 
 export const EasyActive: Story = {
   args: {

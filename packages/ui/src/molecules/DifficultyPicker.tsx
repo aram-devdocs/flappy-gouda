@@ -25,6 +25,8 @@ interface DifficultyPickerProps {
   onSelect: (key: DifficultyKey) => void;
   /** Called when the picker is dismissed (backdrop click or Escape). */
   onClose: () => void;
+  /** Which difficulty options to show. Defaults to DIFF_KEYS. */
+  availableDifficulties?: DifficultyKey[];
 }
 
 /** Modal dialog listing all difficulty levels with best-score annotations. */
@@ -34,6 +36,7 @@ export function DifficultyPicker({
   visible,
   onSelect,
   onClose,
+  availableDifficulties = DIFF_KEYS,
 }: DifficultyPickerProps) {
   if (!visible) return null;
 
@@ -84,9 +87,12 @@ export function DifficultyPicker({
         >
           Difficulty
         </div>
-        {DIFF_KEYS.map((key) => {
+        {availableDifficulties.map((key) => {
           const isActive = key === currentDifficulty;
+          const isSouls = key === 'souls';
           const best = bestScores[key];
+          const activeColor = isSouls ? cssVar('souls') : cssVar('violet');
+          const inactiveColor = isSouls ? RGBA_TOKENS.soulsBgSubtle : cssVar('light');
           return (
             <button
               key={key}
@@ -102,8 +108,8 @@ export function DifficultyPicker({
                 marginBottom: SPACING[1.5],
                 fontSize: FONT_SIZE.sm,
                 fontWeight: FONT_WEIGHT.bold,
-                color: isActive ? cssVar('white') : cssVar('navy'),
-                background: isActive ? cssVar('violet') : cssVar('light'),
+                color: isActive ? cssVar('white') : isSouls ? cssVar('souls') : cssVar('navy'),
+                background: isActive ? activeColor : inactiveColor,
                 border: 'none',
                 borderRadius: RADIUS.md,
                 cursor: 'pointer',

@@ -8,6 +8,25 @@ import type { EngineState } from './engine-state';
 import { checkGroundCollision, spawnPipe, updateBird, updateClouds, updatePipes } from './physics';
 import type { Renderer } from './renderer';
 
+/** Try spawning a pipe if the spawn interval has elapsed, applying timing variation. */
+function trySpawnPipe(
+  state: EngineState,
+  config: GameConfig,
+  pipePool: Pipe[],
+  activeCount: number,
+  now: number,
+): number {
+  const spawnDelay = state.nextSpawnDelay > 0 ? state.nextSpawnDelay : config.pipeSpawn;
+  if (now - state.lastPipeTime <= spawnDelay) return activeCount;
+  const newCount = spawnPipe(pipePool, activeCount, config);
+  state.lastPipeTime = now;
+  state.nextSpawnDelay =
+    config.pipeSpawnVariation > 0
+      ? config.pipeSpawn + (Math.random() * 2 - 1) * config.pipeSpawnVariation
+      : config.pipeSpawn;
+  return newCount;
+}
+
 export function engineUpdate(
   loop: EngineLoop,
   state: EngineState,
@@ -33,10 +52,7 @@ export function engineUpdate(
     if (checkGroundCollision(bird, config)) {
       state.die();
     } else {
-      if (now - state.lastPipeTime > config.pipeSpawn) {
-        activeCount = spawnPipe(pipePool, activeCount, config);
-        state.lastPipeTime = now;
-      }
+      activeCount = trySpawnPipe(state, config, pipePool, activeCount, now);
       const r = updatePipes(pipePool, activeCount, bird, config, dt);
       activeCount = r.activeCount;
       if (r.scoreInc > 0) state.setScore(state.score + r.scoreInc);

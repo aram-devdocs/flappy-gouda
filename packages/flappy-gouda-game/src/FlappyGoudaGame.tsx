@@ -1,5 +1,6 @@
 import { useGameEngine, useGameInput } from '@repo/hooks';
-import type { FlappyGoudaGameProps } from '@repo/types';
+import type { DifficultyKey, FlappyGoudaGameProps } from '@repo/types';
+import { DIFF_KEYS } from '@repo/types';
 import {
   DifficultyPicker,
   FpsCounter,
@@ -12,7 +13,7 @@ import {
   SettingsMenu,
   TitleScreen,
 } from '@repo/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { GameErrorBoundary } from './GameErrorBoundary';
 import { LeaderboardOverlay } from './LeaderboardOverlay';
 import { useDebugBridge } from './useDebugBridge';
@@ -31,6 +32,7 @@ export function FlappyGoudaGame({
   className,
   showFps = false,
   showDebug = false,
+  soulsMode = false,
   onDebugMetrics,
   debugControlsRef,
   leaderboard,
@@ -112,6 +114,18 @@ export function FlappyGoudaGame({
     enabled: settingsView === 'closed',
   });
 
+  const availableDifficulties = useMemo<DifficultyKey[]>(
+    () => (soulsMode ? DIFF_KEYS : DIFF_KEYS.filter((k) => k !== 'souls')),
+    [soulsMode],
+  );
+
+  // Fall back from souls when soulsMode is disabled
+  useEffect(() => {
+    if (!soulsMode && difficulty === 'souls') {
+      setDifficulty('hard');
+    }
+  }, [soulsMode, difficulty, setDifficulty]);
+
   const currentBest = bestScores[difficulty] ?? 0;
   const isOverlayVisible = state !== 'play' || settingsView !== 'closed';
   const hasLeaderboard = !!leaderboard;
@@ -150,6 +164,7 @@ export function FlappyGoudaGame({
           visible={settingsView === 'difficulty'}
           onSelect={handleDifficultySelect}
           onClose={handleSettingsClose}
+          availableDifficulties={availableDifficulties}
         />
         <ResetConfirmModal
           visible={settingsView === 'confirm-reset'}

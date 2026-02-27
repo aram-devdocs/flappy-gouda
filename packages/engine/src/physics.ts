@@ -1,6 +1,6 @@
 import type { Bird, Cloud, GameConfig, Pipe } from '@repo/types';
 import { atIndex } from './assert';
-import { BIRD_ROTATION, PIPE_SPAWN_MARGIN } from './config';
+import { BIRD_ROTATION } from './config';
 import { poolRemove } from './pool';
 
 /** Outcome flags returned after a physics tick. */
@@ -40,9 +40,10 @@ export function checkPipeCollision(bird: Bird, pipe: Pipe, config: GameConfig): 
   const bx = config.birdX + pad;
   const by = bird.y + pad;
   const bs = config.birdSize - pad * 2;
+  const gap = pipe.gap > 0 ? pipe.gap : config.pipeGap;
 
   if (bx + bs > pipe.x && bx < pipe.x + config.pipeWidth) {
-    if (by < pipe.topH || by + bs > pipe.topH + config.pipeGap) {
+    if (by < pipe.topH || by + bs > pipe.topH + gap) {
       return true;
     }
   }
@@ -68,13 +69,19 @@ export function updateClouds(clouds: Cloud[], config: GameConfig, dt: number): v
 /** Activate the next pipe in the pool with a random gap position. Returns the new active count. */
 export function spawnPipe(pipePool: Pipe[], activeCount: number, config: GameConfig): number {
   if (activeCount >= pipePool.length) return activeCount;
-  const minTop = PIPE_SPAWN_MARGIN;
-  const maxTop = config.height - config.groundH - config.pipeGap - PIPE_SPAWN_MARGIN;
+  const gap =
+    config.pipeGapVariation > 0
+      ? config.pipeGap + (Math.random() * 2 - 1) * config.pipeGapVariation
+      : config.pipeGap;
+  const margin = config.pipeSpawnMargin;
+  const minTop = margin;
+  const maxTop = config.height - config.groundH - gap - margin;
   const topH = minTop + Math.random() * (maxTop - minTop);
   const p = atIndex(pipePool, activeCount);
   p.x = config.width;
   p.topH = topH;
   p.scored = false;
+  p.gap = gap;
   return activeCount + 1;
 }
 

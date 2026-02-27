@@ -201,6 +201,7 @@ export function GameWithLeaderboard() {
       )}
 
       <FlappyGoudaGame
+        soulsMode
         showFps
         showDebug
         onDebugMetrics={setDebugMetrics}

@@ -7,12 +7,13 @@ import { saveBestScores, saveDifficulty } from './persistence';
 export class EngineState {
   state: GameState = 'idle';
   score = 0;
-  bestScores: BestScores = { easy: 0, normal: 0, hard: 0 };
+  bestScores: BestScores = { easy: 0, normal: 0, hard: 0, souls: 0 };
   difficulty: DifficultyKey = 'normal';
   deadTime = 0;
   lastPipeTime = 0;
   prevStateBeforePause: GameState | null = null;
   pausedTime = 0;
+  nextSpawnDelay = 0;
 
   constructor(private events: EngineEventEmitter) {}
 
@@ -41,6 +42,7 @@ export class EngineState {
     this.deadTime = 0;
     this.prevStateBeforePause = null;
     this.pausedTime = 0;
+    this.nextSpawnDelay = config.pipeSpawn;
   }
 
   /** End the current run. Persists a new best score if achieved. */

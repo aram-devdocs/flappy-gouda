@@ -12,6 +12,7 @@ export const COLOR_TOKENS = {
   midviolet: '#1A6B7A',
   skyBottom: '#E8F5F0',
   lavender: '#C5E8DC',
+  souls: '#C0392B',
 } as const;
 
 /** RGB channel strings for composing rgba() values. */
@@ -19,6 +20,7 @@ export const COLOR_RGB = {
   navy: '10, 61, 92',
   violet: '90, 175, 165',
   black: '0, 0, 0',
+  souls: '192, 57, 43',
 } as const;
 
 /** Semantic status indicator colors. */
@@ -44,4 +46,6 @@ export const RGBA_TOKENS = {
   shadowBase: `rgba(${COLOR_RGB.black}, 0.09)`,
   violetBgSubtle: `rgba(${COLOR_RGB.violet}, 0.08)`,
   violetBorderSubtle: `rgba(${COLOR_RGB.violet}, 0.15)`,
+  soulsBgSubtle: `rgba(${COLOR_RGB.souls}, 0.08)`,
+  soulsBorderSubtle: `rgba(${COLOR_RGB.souls}, 0.15)`,
 } as const;

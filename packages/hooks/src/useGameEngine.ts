@@ -47,7 +47,12 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
 
   const [state, setState] = useState<GameState>('idle');
   const [score, setScore] = useState(0);
-  const [bestScores, setBestScores] = useState<BestScores>({ easy: 0, normal: 0, hard: 0 });
+  const [bestScores, setBestScores] = useState<BestScores>({
+    easy: 0,
+    normal: 0,
+    hard: 0,
+    souls: 0,
+  });
   const [difficulty, setDifficultyState] = useState<DifficultyKey>(config?.difficulty ?? 'normal');
   const [fps, setFps] = useState(0);
   const [engineReady, setEngineReady] = useState(false);

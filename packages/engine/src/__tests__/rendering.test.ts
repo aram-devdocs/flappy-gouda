@@ -734,7 +734,7 @@ describe('Renderer', () => {
 
   describe('drawPipes', () => {
     it('delegates to drawPipes with correct arguments', () => {
-      const pipes: Pipe[] = [{ x: 100, topH: 80, scored: false }];
+      const pipes: Pipe[] = [{ x: 100, topH: 80, scored: false, gap: 162 }];
       renderer.drawPipes(pipes, 1);
 
       // drawPipes calls translate for each pipe

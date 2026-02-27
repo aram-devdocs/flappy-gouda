@@ -37,7 +37,7 @@ vi.mock('@repo/engine', () => {
     resume: vi.fn(),
     handleClick: vi.fn(() => false),
     getDifficulty: vi.fn(() => 'normal'),
-    getBestScores: vi.fn(() => ({ easy: 0, normal: 0, hard: 0 })),
+    getBestScores: vi.fn(() => ({ easy: 0, normal: 0, hard: 0, souls: 0 })),
   };
   return {
     FlappyEngine: vi.fn(() => mockEngine),
@@ -322,7 +322,7 @@ describe('useGameEngine', () => {
 
     expect(result.current.state).toBe('idle');
     expect(result.current.score).toBe(0);
-    expect(result.current.bestScores).toEqual({ easy: 0, normal: 0, hard: 0 });
+    expect(result.current.bestScores).toEqual({ easy: 0, normal: 0, hard: 0, souls: 0 });
     expect(result.current.difficulty).toBe('normal');
     expect(result.current.fps).toBe(0);
   });
