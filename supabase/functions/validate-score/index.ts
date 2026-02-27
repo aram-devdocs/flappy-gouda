@@ -7,7 +7,7 @@ const CORS_HEADERS = {
 };
 
 const MAX_SCORE = 9999;
-const DIFFICULTY_VALUES = ['easy', 'normal', 'hard'] as const;
+const DIFFICULTY_VALUES = ['easy', 'normal', 'hard', 'souls'] as const;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 10;
 
@@ -77,7 +77,7 @@ async function parseAndValidateBody(
   if (!isValidScore(score))
     return jsonResponse({ error: 'Invalid score: must be integer 0-9999' }, 400);
   if (!isValidDifficulty(difficulty)) {
-    return jsonResponse({ error: 'Invalid difficulty: must be easy, normal, or hard' }, 400);
+    return jsonResponse({ error: 'Invalid difficulty: must be easy, normal, hard, or souls' }, 400);
   }
 
   return { score, difficulty };

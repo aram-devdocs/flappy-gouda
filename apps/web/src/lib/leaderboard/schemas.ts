@@ -7,10 +7,10 @@ export const NicknameSchema = z
 
 export const ScoreSubmitSchema = z.object({
   score: z.number().int().min(0).max(9999),
-  difficulty: z.enum(['easy', 'normal', 'hard']),
+  difficulty: z.enum(['easy', 'normal', 'hard', 'souls']),
 });
 
 export const LeaderboardQuerySchema = z.object({
-  difficulty: z.enum(['easy', 'normal', 'hard']),
+  difficulty: z.enum(['easy', 'normal', 'hard', 'souls']),
   limit: z.number().int().min(1).max(100).default(100),
 });
