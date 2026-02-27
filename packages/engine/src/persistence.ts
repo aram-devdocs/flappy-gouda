@@ -10,7 +10,7 @@ const DIFF_STORAGE_KEY = 'fg-flappy-diff';
 
 /** Load per-difficulty best scores from localStorage, migrating the legacy single-score key if needed. */
 export function loadBestScores(): BestScores {
-  const scores: BestScores = { easy: 0, normal: 0, hard: 0 };
+  const scores: BestScores = { easy: 0, normal: 0, hard: 0, souls: 0 };
   try {
     const raw = localStorage.getItem(BEST_STORAGE_KEY);
     if (raw) {
@@ -48,7 +48,7 @@ export function saveBestScores(scores: BestScores): void {
 /** Load the saved difficulty preference from localStorage, defaulting to 'normal'. */
 export function loadDifficulty(): DifficultyKey {
   const stored = localStorage.getItem(DIFF_STORAGE_KEY);
-  if (stored === 'easy' || stored === 'normal' || stored === 'hard') {
+  if (stored === 'easy' || stored === 'normal' || stored === 'hard' || stored === 'souls') {
     return stored;
   }
   return 'normal';

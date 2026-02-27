@@ -21,9 +21,14 @@ interface DifficultyBadgeProps {
   onClick: () => void;
 }
 
+const SOULS_ACCENT = '#C0392B';
+const SOULS_BG_SUBTLE = 'rgba(192, 57, 43, 0.08)';
+const SOULS_BORDER_SUBTLE = 'rgba(192, 57, 43, 0.15)';
+
 /** Small pill button showing the current difficulty level. */
 export function DifficultyBadge({ difficulty, visible, onClick }: DifficultyBadgeProps) {
   if (!visible) return null;
+  const isSouls = difficulty === 'souls';
 
   return (
     <button
@@ -34,9 +39,9 @@ export function DifficultyBadge({ difficulty, visible, onClick }: DifficultyBadg
         padding: `${SPACING[0.5]} ${SPACING[2.5]}`,
         fontSize: FONT_SIZE.sm,
         fontWeight: FONT_WEIGHT.bold,
-        color: cssVar('violet'),
-        background: RGBA_TOKENS.violetBgSubtle,
-        border: `${BORDER_WIDTH.thin} solid ${RGBA_TOKENS.violetBorderSubtle}`,
+        color: isSouls ? SOULS_ACCENT : cssVar('violet'),
+        background: isSouls ? SOULS_BG_SUBTLE : RGBA_TOKENS.violetBgSubtle,
+        border: `${BORDER_WIDTH.thin} solid ${isSouls ? SOULS_BORDER_SUBTLE : RGBA_TOKENS.violetBorderSubtle}`,
         borderRadius: RADIUS.xl,
         cursor: 'pointer',
         lineHeight: LINE_HEIGHT.tight,

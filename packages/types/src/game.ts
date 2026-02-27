@@ -2,7 +2,7 @@
 export type GameState = 'idle' | 'play' | 'dead' | 'paused';
 
 /** Identifier for a difficulty level. */
-export type DifficultyKey = 'easy' | 'normal' | 'hard';
+export type DifficultyKey = 'easy' | 'normal' | 'hard' | 'souls';
 
 /** Configuration for a single difficulty level. */
 export interface DifficultyPreset {
@@ -20,19 +20,26 @@ export interface DifficultyPreset {
   pipeSpawn: number;
   /** Hitbox padding shrink in pixels (larger = more forgiving). */
   hitboxPad: number;
+  /** Per-pipe gap size variation in pixels (±). 0 = fixed gap. */
+  pipeGapVariation: number;
+  /** Minimum distance from top/bottom edge when spawning pipe gaps. */
+  pipeSpawnMargin: number;
+  /** Random variation in spawn timing in milliseconds (±). 0 = fixed interval. */
+  pipeSpawnVariation: number;
 }
 
 /** Maps each difficulty key to its preset values. */
 export type DifficultyMap = Record<DifficultyKey, DifficultyPreset>;
 
 /** Ordered list of all difficulty keys. */
-export const DIFF_KEYS: DifficultyKey[] = ['easy', 'normal', 'hard'];
+export const DIFF_KEYS: DifficultyKey[] = ['easy', 'normal', 'hard', 'souls'];
 
 /** Human-readable labels for each difficulty level. */
 export const DIFF_LABELS: Record<DifficultyKey, string> = {
   easy: 'Easy',
   normal: 'Normal',
   hard: 'Hard',
+  souls: 'Souls',
 };
 
 /** Full runtime game configuration including physics and layout values. */
@@ -67,6 +74,12 @@ export interface GameConfig {
   cloudCount: number;
   /** Delay before allowing restart after death, in milliseconds. */
   resetDelay: number;
+  /** Per-pipe gap size variation in pixels (±). 0 = fixed gap. */
+  pipeGapVariation: number;
+  /** Minimum distance from top/bottom edge when spawning pipe gaps. */
+  pipeSpawnMargin: number;
+  /** Random variation in spawn timing in milliseconds (±). 0 = fixed interval. */
+  pipeSpawnVariation: number;
 }
 
 /** Theme color palette used for canvas and UI rendering. */

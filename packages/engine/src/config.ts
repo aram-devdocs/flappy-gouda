@@ -24,6 +24,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   birdX: 70,
   cloudCount: 4,
   resetDelay: 600,
+  pipeGapVariation: 0,
+  pipeSpawnMargin: 60,
+  pipeSpawnVariation: 0,
 };
 
 /** Physics and spawning presets for each difficulty level. */
@@ -36,6 +39,9 @@ export const DIFFICULTY: DifficultyMap = {
     pipeSpeed: 1.9,
     pipeSpawn: 1900,
     hitboxPad: 7,
+    pipeGapVariation: 0,
+    pipeSpawnMargin: 60,
+    pipeSpawnVariation: 0,
   },
   normal: {
     gravity: 0.28,
@@ -45,6 +51,9 @@ export const DIFFICULTY: DifficultyMap = {
     pipeSpeed: 2.2,
     pipeSpawn: 1700,
     hitboxPad: 5,
+    pipeGapVariation: 0,
+    pipeSpawnMargin: 60,
+    pipeSpawnVariation: 0,
   },
   hard: {
     gravity: 0.38,
@@ -54,6 +63,21 @@ export const DIFFICULTY: DifficultyMap = {
     pipeSpeed: 2.6,
     pipeSpawn: 1450,
     hitboxPad: 2,
+    pipeGapVariation: 0,
+    pipeSpawnMargin: 60,
+    pipeSpawnVariation: 0,
+  },
+  souls: {
+    gravity: 0.48,
+    flapForce: -7.2,
+    terminalVel: 8.5,
+    pipeGap: 118,
+    pipeSpeed: 3.2,
+    pipeSpawn: 1150,
+    hitboxPad: 0,
+    pipeGapVariation: 12,
+    pipeSpawnMargin: 40,
+    pipeSpawnVariation: 200,
   },
 };
 
@@ -115,6 +139,9 @@ export function applyDifficulty(key: DifficultyKey, config: GameConfig): void {
   config.pipeSpeed = d.pipeSpeed;
   config.pipeSpawn = d.pipeSpawn;
   config.hitboxPad = d.hitboxPad;
+  config.pipeGapVariation = d.pipeGapVariation;
+  config.pipeSpawnMargin = d.pipeSpawnMargin;
+  config.pipeSpawnVariation = d.pipeSpawnVariation;
 }
 
 /** Validate that a GameConfig has sane values. Throws EngineError on invalid config. */

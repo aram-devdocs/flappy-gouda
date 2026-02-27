@@ -16,6 +16,8 @@ export interface Pipe {
   topH: number;
   /** Whether the bird has already passed and scored this pipe. */
   scored: boolean;
+  /** Vertical gap size for this pipe in pixels (set per-pipe for variation). */
+  gap: number;
 }
 
 /** An ambient cloud with optional pre-rendered canvas cache. */

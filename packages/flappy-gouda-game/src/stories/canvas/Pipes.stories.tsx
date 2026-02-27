@@ -9,7 +9,10 @@ const H = 400;
 const PIPE_W = 52;
 
 function PipesPreview({ gapSize, topH }: { gapSize: number; topH: number }) {
-  const pipes: Pipe[] = useMemo(() => [{ x: 74, topH, scored: false }], [topH]);
+  const pipes: Pipe[] = useMemo(
+    () => [{ x: 74, topH, scored: false, gap: gapSize }],
+    [topH, gapSize],
+  );
 
   const draw = useCallback(
     (ctx: CanvasRenderingContext2D) => {

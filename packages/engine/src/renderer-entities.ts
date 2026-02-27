@@ -51,14 +51,14 @@ export function drawPipes(
   pipes: Pipe[],
   activeCount: number,
   pipeWidth: number,
-  pipeGap: number,
+  fallbackGap: number,
   height: number,
   pipeGrad: CanvasGradient | null,
   pipeLip: PipeLipCache,
 ): void {
   for (let i = 0; i < activeCount; i++) {
     const p = atIndex(pipes, i);
-    const gapBottom = p.topH + pipeGap;
+    const gapBottom = p.topH + (p.gap > 0 ? p.gap : fallbackGap);
 
     ctx.save();
     ctx.translate(p.x, 0);

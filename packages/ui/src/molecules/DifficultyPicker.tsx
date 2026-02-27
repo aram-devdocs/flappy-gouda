@@ -13,6 +13,10 @@ import {
   cssVar,
 } from '@repo/types';
 
+/** Crimson accent used exclusively for the Souls difficulty option. */
+const SOULS_ACCENT = '#C0392B';
+const SOULS_BG_SUBTLE = 'rgba(192, 57, 43, 0.08)';
+
 /** Props for {@link DifficultyPicker}. */
 interface DifficultyPickerProps {
   /** The currently selected difficulty level. */
@@ -25,6 +29,8 @@ interface DifficultyPickerProps {
   onSelect: (key: DifficultyKey) => void;
   /** Called when the picker is dismissed (backdrop click or Escape). */
   onClose: () => void;
+  /** Which difficulty options to show. Defaults to DIFF_KEYS. */
+  availableDifficulties?: DifficultyKey[];
 }
 
 /** Modal dialog listing all difficulty levels with best-score annotations. */
@@ -34,6 +40,7 @@ export function DifficultyPicker({
   visible,
   onSelect,
   onClose,
+  availableDifficulties = DIFF_KEYS,
 }: DifficultyPickerProps) {
   if (!visible) return null;
 
@@ -84,9 +91,12 @@ export function DifficultyPicker({
         >
           Difficulty
         </div>
-        {DIFF_KEYS.map((key) => {
+        {availableDifficulties.map((key) => {
           const isActive = key === currentDifficulty;
+          const isSouls = key === 'souls';
           const best = bestScores[key];
+          const activeColor = isSouls ? SOULS_ACCENT : cssVar('violet');
+          const inactiveColor = isSouls ? SOULS_BG_SUBTLE : cssVar('light');
           return (
             <button
               key={key}
@@ -102,8 +112,8 @@ export function DifficultyPicker({
                 marginBottom: SPACING[1.5],
                 fontSize: FONT_SIZE.sm,
                 fontWeight: FONT_WEIGHT.bold,
-                color: isActive ? cssVar('white') : cssVar('navy'),
-                background: isActive ? cssVar('violet') : cssVar('light'),
+                color: isActive ? cssVar('white') : isSouls ? SOULS_ACCENT : cssVar('navy'),
+                background: isActive ? activeColor : inactiveColor,
                 border: 'none',
                 borderRadius: RADIUS.md,
                 cursor: 'pointer',

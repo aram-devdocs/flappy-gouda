@@ -278,14 +278,14 @@ describe('EngineState', () => {
       vi.spyOn(performance, 'now').mockReturnValue(1000);
       state.state = 'play';
       state.score = 15;
-      state.bestScores = { easy: 0, normal: 10, hard: 0 };
+      state.bestScores = { easy: 0, normal: 10, hard: 0, souls: 0 };
       state.difficulty = 'normal';
 
       state.die();
 
       expect(state.bestScores.normal).toBe(15);
-      expect(saveBestScores).toHaveBeenCalledWith({ easy: 0, normal: 15, hard: 0 });
-      expect(bestCb).toHaveBeenCalledWith({ easy: 0, normal: 15, hard: 0 });
+      expect(saveBestScores).toHaveBeenCalledWith({ easy: 0, normal: 15, hard: 0, souls: 0 });
+      expect(bestCb).toHaveBeenCalledWith({ easy: 0, normal: 15, hard: 0, souls: 0 });
     });
 
     it('does not save best score when current score does not exceed best', () => {
@@ -295,7 +295,7 @@ describe('EngineState', () => {
       vi.spyOn(performance, 'now').mockReturnValue(1000);
       state.state = 'play';
       state.score = 3;
-      state.bestScores = { easy: 0, normal: 10, hard: 0 };
+      state.bestScores = { easy: 0, normal: 10, hard: 0, souls: 0 };
       state.difficulty = 'normal';
 
       state.die();
