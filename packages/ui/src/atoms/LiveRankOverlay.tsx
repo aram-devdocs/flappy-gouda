@@ -1,4 +1,4 @@
-import { FONT_SIZE, FONT_WEIGHT, OPACITY, SPACING, Z_INDEX, cssVar } from '@repo/types';
+import { FONT_SIZE, FONT_WEIGHT, OPACITY, RADIUS, SPACING, Z_INDEX, cssVar } from '@repo/types';
 
 /** Props for {@link LiveRankOverlay}. */
 export interface LiveRankOverlayProps {
@@ -16,7 +16,7 @@ export function LiveRankOverlay({ visible, rank, improving }: LiveRankOverlayPro
       aria-label={`Current rank: ${rank}`}
       style={{
         position: 'absolute',
-        top: '44px',
+        top: SPACING[8],
         left: '50%',
         transform: 'translateX(-50%)',
         pointerEvents: 'none',
@@ -25,7 +25,7 @@ export function LiveRankOverlay({ visible, rank, improving }: LiveRankOverlayPro
         alignItems: 'center',
         gap: SPACING[1],
         padding: `${SPACING[0.5]} ${SPACING[2]}`,
-        borderRadius: '9999px',
+        borderRadius: RADIUS.pill,
         background: improving ? cssVar('cyan') : cssVar('navy'),
         opacity: OPACITY.strong,
         transition: 'background 0.3s ease, opacity 0.3s ease',
