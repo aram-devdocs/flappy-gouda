@@ -73,6 +73,16 @@ export interface SkylineSegment {
   totalW: number;
   /** Scroll speed multiplier. */
   speed: number;
+  /** Pre-rendered offscreen canvas (null until first render pass). */
+  _canvas: HTMLCanvasElement | null;
+  /** X offset from segment position to cached canvas left edge. */
+  _cacheOffX: number;
+  /** Y offset from segment groundY to cached canvas top edge. */
+  _cacheOffY: number;
+  /** Logical width of the cached canvas. */
+  _cacheW: number;
+  /** Logical height of the cached canvas. */
+  _cacheH: number;
 }
 
 /** Mid-ground building style variant. */
@@ -94,13 +104,15 @@ export interface Building {
   windows: number;
   /** Scroll speed multiplier. */
   speed: number;
-  /** Cached render offset X. */
+  /** Pre-rendered offscreen canvas (null until first render pass). */
+  _canvas: HTMLCanvasElement | null;
+  /** X offset from building position to cached canvas left edge. */
   _cacheOffX: number;
-  /** Cached render offset Y. */
+  /** Y offset from building position to cached canvas top edge. */
   _cacheOffY: number;
-  /** Cached render width. */
+  /** Logical width of the cached canvas. */
   _cacheW: number;
-  /** Cached render height. */
+  /** Logical height of the cached canvas. */
   _cacheH: number;
 }
 
@@ -121,6 +133,16 @@ export interface Tree {
   type: TreeType;
   /** Scroll speed multiplier. */
   speed: number;
+  /** Pre-rendered offscreen canvas (null until first render pass). */
+  _canvas: HTMLCanvasElement | null;
+  /** X offset from tree position to cached canvas left edge. */
+  _cacheOffX: number;
+  /** Y offset from tree position to cached canvas top edge. */
+  _cacheOffY: number;
+  /** Logical width of the cached canvas. */
+  _cacheW: number;
+  /** Logical height of the cached canvas. */
+  _cacheH: number;
 }
 
 /** A small ground-level decoration (dash or dot). */

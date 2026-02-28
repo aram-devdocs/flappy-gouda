@@ -18,6 +18,7 @@ function makeBuilding(type: BuildingType, x: number, w: number, h: number): Buil
     type,
     windows: 2,
     speed: 0.18,
+    _canvas: null,
     _cacheOffX: 0,
     _cacheOffY: 0,
     _cacheW: w,

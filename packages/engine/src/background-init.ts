@@ -78,6 +78,7 @@ export function populateBuildings(layers: BgLayers, width: number, groundY: numb
       type: randomBuildingType(),
       windows: Math.floor(Math.random() * 4) + 1,
       speed: BG.midSpeed,
+      _canvas: null,
       _cacheOffX: 0,
       _cacheOffY: 0,
       _cacheW: 0,
@@ -98,6 +99,11 @@ export function populateTrees(layers: BgLayers, width: number, groundY: number):
       h: w * (1.5 + Math.random()),
       type: Math.random() < 0.3 ? 'pine' : 'round',
       speed: BG.nearSpeed,
+      _canvas: null,
+      _cacheOffX: 0,
+      _cacheOffY: 0,
+      _cacheW: 0,
+      _cacheH: 0,
     });
     tx += w + 20 + Math.random() * 50;
   }

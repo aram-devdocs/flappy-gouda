@@ -14,7 +14,7 @@ const fonts = buildFontCache(DEFAULT_FONT);
 function ScorePreview({ score }: { score: number }) {
   const draw = useCallback(
     (ctx: CanvasRenderingContext2D) => {
-      drawScore(ctx, score, 200, fonts, DEFAULT_COLORS);
+      drawScore(ctx, String(score), 200, fonts, DEFAULT_COLORS);
     },
     [score],
   );

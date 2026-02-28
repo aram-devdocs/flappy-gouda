@@ -10,7 +10,19 @@ const GROUND_Y = 100;
 const PREVIEW_ALPHA = 0.6;
 
 function makeTree(type: TreeType, x: number, w: number, h: number): Tree {
-  return { x, y: GROUND_Y, w, h, type, speed: 0.35 };
+  return {
+    x,
+    y: GROUND_Y,
+    w,
+    h,
+    type,
+    speed: 0.35,
+    _canvas: null,
+    _cacheOffX: 0,
+    _cacheOffY: 0,
+    _cacheW: 0,
+    _cacheH: 0,
+  };
 }
 
 function TreePreview({ treeType }: { treeType: TreeType }) {

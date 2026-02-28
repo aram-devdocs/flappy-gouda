@@ -1,21 +1,23 @@
-import type { Cloud, GameColors, GameConfig } from '@repo/types';
+import type { CanvasStack, Cloud, GameColors, GameConfig } from '@repo/types';
 import { BackgroundSystem } from './background';
 import type { CachedFonts } from './cache';
 import { BASE_H, BASE_W } from './config';
+import type { CanvasContexts } from './renderer';
 import { Renderer } from './renderer';
 
-/** Configure canvas dimensions and DPR scaling, returning the device pixel ratio. */
-export function setupCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): number {
+/** Configure all three layered canvases for DPR scaling, returning the device pixel ratio. */
+export function setupCanvasStack(stack: CanvasStack): number {
   const maxCssW = Math.max(1, Math.min(BASE_W, window.innerWidth - 48));
   const cssScale = maxCssW / BASE_W;
   const cssW = Math.round(BASE_W * cssScale);
   const cssH = Math.round(BASE_H * cssScale);
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = BASE_W * dpr;
-  canvas.height = BASE_H * dpr;
-  canvas.style.width = `${cssW}px`;
-  canvas.style.height = `${cssH}px`;
-  ctx.scale(dpr, dpr);
+  for (const canvas of [stack.bg, stack.mg, stack.fg]) {
+    canvas.width = BASE_W * dpr;
+    canvas.height = BASE_H * dpr;
+    canvas.style.width = `${cssW}px`;
+    canvas.style.height = `${cssH}px`;
+  }
   return dpr;
 }
 
@@ -47,16 +49,16 @@ export function createBgSystem(config: GameConfig): BackgroundSystem {
   });
 }
 
-/** Create a Renderer instance wired to the given canvas context, config, colors, and fonts. */
+/** Create a Renderer instance wired to the given canvas contexts, config, colors, and fonts. */
 export function createRenderer(
-  ctx: CanvasRenderingContext2D,
+  contexts: CanvasContexts,
   config: GameConfig,
   colors: GameColors,
   fonts: CachedFonts,
   dpr: number,
 ): Renderer {
   return new Renderer(
-    ctx,
+    contexts,
     {
       width: config.width,
       height: config.height,

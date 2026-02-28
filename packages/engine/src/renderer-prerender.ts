@@ -16,6 +16,14 @@ export interface PipeLipCache {
   logH: number;
 }
 
+/** Pre-rendered settings gear icon in normal and hovered states. */
+export interface SettingsIconCache {
+  normal: HTMLCanvasElement | null;
+  hovered: HTMLCanvasElement | null;
+  logW: number;
+  logH: number;
+}
+
 /** Pre-render a single cloud to an offscreen canvas for fast blitting during the game loop. */
 export function prerenderCloud(c: Cloud, dpr: number, colors: GameColors): void {
   const pad = 4;
@@ -102,6 +110,54 @@ export interface GradientCache {
   accentGrad: CanvasGradient | null;
   /** Horizontal gradient for pipe columns. */
   pipeGrad: CanvasGradient | null;
+}
+
+/** Pre-render the settings gear icon at two alpha levels for fast blitting during gameplay. */
+export function buildSettingsIconCache(
+  iconSize: number,
+  dpr: number,
+  colors: GameColors,
+): SettingsIconCache {
+  const logW = iconSize;
+  const logH = iconSize;
+
+  function renderVariant(alpha: number): HTMLCanvasElement | null {
+    const offC = document.createElement('canvas');
+    offC.width = logW * dpr;
+    offC.height = logH * dpr;
+    const oCtx = offC.getContext('2d');
+    if (!oCtx) {
+      log.warn('Failed to get 2D context for settings icon prerender');
+      return null;
+    }
+    oCtx.scale(dpr, dpr);
+    const cx = logW / 2;
+    const cy = logH / 2;
+    const outer = logW / 2;
+    const inner = outer * 0.62;
+    const hole = outer * 0.3;
+    const teeth = 8;
+
+    oCtx.globalAlpha = alpha;
+    oCtx.fillStyle = colors.navy;
+    oCtx.beginPath();
+    for (let i = 0; i < teeth; i++) {
+      const a0 = (TAU / teeth) * i - TAU / (teeth * 4);
+      const a1 = a0 + TAU / (teeth * 4);
+      const a2 = a1 + TAU / (teeth * 4);
+      oCtx.lineTo(cx + Math.cos(a0) * outer, cy + Math.sin(a0) * outer);
+      oCtx.lineTo(cx + Math.cos(a1) * outer, cy + Math.sin(a1) * outer);
+      oCtx.lineTo(cx + Math.cos(a1) * inner, cy + Math.sin(a1) * inner);
+      oCtx.lineTo(cx + Math.cos(a2) * inner, cy + Math.sin(a2) * inner);
+    }
+    oCtx.closePath();
+    oCtx.moveTo(cx + hole, cy);
+    oCtx.arc(cx, cy, hole, 0, TAU, true);
+    oCtx.fill('evenodd');
+    return offC;
+  }
+
+  return { normal: renderVariant(0.35), hovered: renderVariant(0.7), logW, logH };
 }
 
 /** Create and return cached sky, accent, and pipe gradients for the current canvas dimensions. */

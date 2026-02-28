@@ -2,9 +2,14 @@ import { FlappyEngine } from '@repo/engine';
 import type { BestScores, DifficultyKey, EngineConfig, GameState } from '@repo/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/** Minimum interval between fpsUpdate React state flushes (ms). */
+const FPS_THROTTLE_MS = 3000;
+
 /** Shape returned by {@link useGameEngine}. */
 export interface UseGameEngineReturn {
-  /** Ref to attach to the game canvas element. */
+  /** Ref to attach to the game canvas container element. */
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  /** Ref pointing to the foreground canvas (for input event binding). */
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   /** Ref to the engine instance (for debug hooks). */
   engineRef: React.RefObject<FlappyEngine | null>;
@@ -12,13 +17,13 @@ export interface UseGameEngineReturn {
   engineReady: boolean;
   /** Current game lifecycle state. */
   state: GameState;
-  /** Current score for the active run. */
+  /** Current score (flushed to React state on state transitions, not per-point during play). */
   score: number;
   /** Per-difficulty best scores. */
   bestScores: BestScores;
   /** Currently active difficulty key. */
   difficulty: DifficultyKey;
-  /** Smoothed frames-per-second value. */
+  /** Smoothed frames-per-second value (throttled during gameplay). */
   fps: number;
   /** Trigger a flap impulse on the bird. */
   flap: () => void;
@@ -39,9 +44,10 @@ export interface UseGameEngineReturn {
 /**
  * Create and manage a FlappyEngine instance, surfacing its state as React state.
  * @param config Optional engine configuration overrides.
- * @returns Reactive game state, a canvas ref, and stable action callbacks.
+ * @returns Reactive game state, a container ref, a canvas ref, and stable action callbacks.
  */
 export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<FlappyEngine | null>(null);
 
@@ -57,21 +63,51 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
   const [fps, setFps] = useState(0);
   const [engineReady, setEngineReady] = useState(false);
 
+  // Hot-path refs — avoid React re-renders during active gameplay.
+  // Score/fps update the ref on every engine event but only flush to
+  // React state on game-state transitions (or throttled for fps).
+  const scoreRef = useRef(0);
+  const fpsRef = useRef(0);
+  const lastFpsFlushRef = useRef(-FPS_THROTTLE_MS);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: engine should only be created once on mount, config is an object ref
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    const engine = new FlappyEngine(canvas, config);
+    const bg = container.querySelector<HTMLCanvasElement>('[data-layer="bg"]');
+    const mg = container.querySelector<HTMLCanvasElement>('[data-layer="mg"]');
+    const fg = container.querySelector<HTMLCanvasElement>('[data-layer="fg"]');
+    if (!bg || !mg || !fg) return;
+
+    canvasRef.current = fg;
+
+    const engine = new FlappyEngine({ bg, mg, fg }, config);
     engineRef.current = engine;
 
-    engine.on('stateChange', setState);
-    engine.on('scoreChange', setScore);
+    engine.on('stateChange', (newState: GameState) => {
+      setState(newState);
+      setScore(scoreRef.current);
+      setFps(fpsRef.current);
+    });
+
+    engine.on('scoreChange', (newScore: number) => {
+      scoreRef.current = newScore;
+    });
+
     engine.on('bestScoreChange', setBestScores);
-    engine.on('fpsUpdate', setFps);
+
+    engine.on('fpsUpdate', (newFps: number) => {
+      fpsRef.current = newFps;
+      const now = performance.now();
+      if (now - lastFpsFlushRef.current >= FPS_THROTTLE_MS) {
+        lastFpsFlushRef.current = now;
+        setFps(newFps);
+      }
+    });
+
     engine.on('difficultyChange', setDifficultyState);
 
-    // Sync initial state loaded from persistence (engine may have loaded from localStorage)
     setDifficultyState(engine.getDifficulty());
     setBestScores(engine.getBestScores());
 
@@ -81,6 +117,7 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
     return () => {
       engine.destroy();
       engineRef.current = null;
+      canvasRef.current = null;
       setEngineReady(false);
     };
   }, []);
@@ -114,6 +151,7 @@ export function useGameEngine(config?: EngineConfig): UseGameEngineReturn {
   }, []);
 
   return {
+    containerRef,
     canvasRef,
     engineRef,
     engineReady,

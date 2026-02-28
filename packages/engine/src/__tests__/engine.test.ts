@@ -439,13 +439,13 @@ describe('drawBird', () => {
 });
 
 describe('drawPipes', () => {
-  it('renders pipe columns for active pipes using save/restore', () => {
+  it('renders pipe columns for active pipes using direct coordinate offsets', () => {
     const ctx = makeCanvasContext();
     const pipes: Pipe[] = [makePipe({ x: 100, topH: 80, scored: false })];
     drawPipes(ctx, pipes, 1, 52, 162, 520, null, { canvas: null, logW: 60, logH: 20 });
-    expect(ctx.save).toHaveBeenCalled();
-    expect(ctx.translate).toHaveBeenCalledWith(100, 0);
-    expect(ctx.restore).toHaveBeenCalled();
+    expect(ctx.save).not.toHaveBeenCalled();
+    expect(ctx.translate).not.toHaveBeenCalled();
+    expect(ctx.restore).not.toHaveBeenCalled();
   });
 
   it('does nothing when activeCount is 0', () => {
@@ -459,7 +459,7 @@ describe('drawScore', () => {
   it('renders score text with shadow and foreground', () => {
     const ctx = makeCanvasContext();
     const fonts = buildFontCache('"Poppins", sans-serif');
-    drawScore(ctx, 42, 380, fonts, DEFAULT_COLORS);
+    drawScore(ctx, '42', 380, fonts, DEFAULT_COLORS);
     expect(ctx.fillText).toHaveBeenCalledTimes(2);
     expect(ctx.fillText).toHaveBeenCalledWith('42', expect.any(Number), expect.any(Number));
   });

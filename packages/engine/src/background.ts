@@ -115,6 +115,7 @@ export class BackgroundSystem {
         b.y = this.deps.height - this.deps.groundH - b.h;
         b.type = randomBuildingType();
         b.windows = Math.floor(Math.random() * 4) + 1;
+        b._canvas = null;
         this.layers.maxRightBuildings = b.x + b.w;
       }
     }
@@ -130,6 +131,7 @@ export class BackgroundSystem {
         t.w = BG.treeMinW + Math.random() * (BG.treeMaxW - BG.treeMinW);
         t.h = t.w * (1.5 + Math.random());
         t.type = Math.random() < 0.3 ? 'pine' : 'round';
+        t._canvas = null;
         this.layers.maxRightTrees = t.x + t.w;
       }
     }

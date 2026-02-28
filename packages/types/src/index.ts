@@ -28,6 +28,8 @@ export type {
 
 export type { EngineEvents, EngineEventName, EngineConfig } from './engine';
 
+export type { CanvasStack } from './canvas';
+
 export type { FlappyGoudaGameProps } from './props';
 
 export type {

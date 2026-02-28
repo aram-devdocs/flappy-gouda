@@ -1,19 +1,27 @@
-import type { Bird, Cloud, DifficultyKey, EngineConfig, EngineEventName } from '@repo/types';
+import type {
+  Bird,
+  CanvasStack,
+  Cloud,
+  DifficultyKey,
+  EngineConfig,
+  EngineEventName,
+} from '@repo/types';
 import type { EngineEvents, GameColors, GameConfig, Pipe } from '@repo/types';
 import type { BackgroundSystem } from './background';
 import type { CachedFonts } from './cache';
 import { loadCheeseImage } from './cheese';
 import { DEFAULT_CONFIG, PIPE_POOL_SIZE, applyDifficulty, validateConfig } from './config';
 import { DebugMetricsCollector } from './debug-metrics';
+import { recordDebugFrame } from './engine-debug-bridge';
 import { EngineEventEmitter } from './engine-events';
 import { engineDraw, engineUpdate } from './engine-frame';
 import { handleFlap, resetEngine, syncPrevBird } from './engine-lifecycle';
 import { EngineLoop } from './engine-loop';
-import { createBgSystem, createRenderer, initClouds, setupCanvas } from './engine-setup';
+import { createBgSystem, createRenderer, initClouds, setupCanvasStack } from './engine-setup';
 import { EngineState } from './engine-state';
 import { EngineError } from './errors';
 import { loadBestScores, loadDifficulty } from './persistence';
-import type { Renderer } from './renderer';
+import type { CanvasContexts, Renderer } from './renderer';
 import { hitTestSettingsIcon } from './renderer-entities';
 import { resolveEngineConfig } from './sanitize';
 /**
@@ -28,8 +36,8 @@ export class FlappyEngine {
   private config: GameConfig;
   private colors: GameColors;
   private fonts: CachedFonts;
-  private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
+  private canvasStack: CanvasStack;
+  private ctxStack: CanvasContexts;
   private dpr = 1;
   private bird: Bird = { y: 0, vy: 0, rot: 0 };
   private prevBird: Bird = { y: 0, vy: 0, rot: 0 };
@@ -43,12 +51,14 @@ export class FlappyEngine {
   private bg: BackgroundSystem;
   private renderer: Renderer;
   private debugCollector: DebugMetricsCollector | null = null;
-  constructor(canvas: HTMLCanvasElement, engineConfig?: EngineConfig) {
-    this.canvas = canvas;
-    const ctx = canvas.getContext('2d');
-    if (!ctx)
+  constructor(canvasStack: CanvasStack, engineConfig?: EngineConfig) {
+    this.canvasStack = canvasStack;
+    const bg = canvasStack.bg.getContext('2d', { alpha: false });
+    const mg = canvasStack.mg.getContext('2d');
+    const fg = canvasStack.fg.getContext('2d');
+    if (!bg || !mg || !fg)
       throw new EngineError('Canvas 2D context not available', 'CANVAS_CONTEXT_UNAVAILABLE');
-    this.ctx = ctx;
+    this.ctxStack = { bg, mg, fg };
     const resolved = resolveEngineConfig(engineConfig);
     this.colors = resolved.colors;
     this.fonts = resolved.fonts;
@@ -58,13 +68,14 @@ export class FlappyEngine {
     applyDifficulty(this.state.difficulty, this.config);
     validateConfig(this.config);
     this.bg = createBgSystem(this.config);
-    this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
+    this.renderer = createRenderer(this.ctxStack, this.config, this.colors, this.fonts, this.dpr);
     if (engineConfig?.enableDebug) this.debugCollector = new DebugMetricsCollector(this.events);
   }
-  /** Initialize the canvas, preload assets, and kick off the game loop. */
+  /** Initialize the canvas stack, preload assets, and kick off the game loop. */
   async start(): Promise<void> {
-    this.dpr = setupCanvas(this.canvas, this.ctx);
-    this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
+    this.dpr = setupCanvasStack(this.canvasStack);
+    for (const ctx of Object.values(this.ctxStack)) ctx.scale(this.dpr, this.dpr);
+    this.renderer = createRenderer(this.ctxStack, this.config, this.colors, this.fonts, this.dpr);
     this.renderer.buildGradients();
     this.renderer.spriteImg = await Promise.race([
       loadCheeseImage(this.colors.violet),
@@ -83,7 +94,7 @@ export class FlappyEngine {
     this.renderer.prerenderAllClouds(this.clouds, this.bg);
     this.state.resetGameState(this.bird, this.config);
     syncPrevBird(this.prevBird, this.bird);
-    this.debugCollector?.initSystemInfo(this.canvas, this.dpr);
+    this.debugCollector?.initSystemInfo(this.canvasStack.fg, this.dpr);
     this.loop.begin();
     this.loop.tick(
       performance.now(),
@@ -110,7 +121,7 @@ export class FlappyEngine {
     this.state.setDifficulty(key, this.config);
     const prevSpriteImg = this.renderer.spriteImg;
     this.renderer.dispose();
-    this.renderer = createRenderer(this.ctx, this.config, this.colors, this.fonts, this.dpr);
+    this.renderer = createRenderer(this.ctxStack, this.config, this.colors, this.fonts, this.dpr);
     this.renderer.buildGradients();
     this.renderer.spriteImg = prevSpriteImg;
     this.bg = createBgSystem(this.config);
@@ -157,8 +168,9 @@ export class FlappyEngine {
   }
   /** Hit-test a CSS-space click against the settings icon. Returns `true` if it was hit. */
   handleClick(cssX: number, cssY: number): boolean {
-    const logicalX = (cssX * (this.canvas.width / this.canvas.clientWidth)) / this.dpr;
-    const logicalY = (cssY * (this.canvas.height / this.canvas.clientHeight)) / this.dpr;
+    const fg = this.canvasStack.fg;
+    const logicalX = (cssX * (fg.width / fg.clientWidth)) / this.dpr;
+    const logicalY = (cssY * (fg.height / fg.clientHeight)) / this.dpr;
     this.settingsIconHovered = hitTestSettingsIcon(logicalX, logicalY, this.config.width);
     return this.settingsIconHovered;
   }
@@ -181,7 +193,9 @@ export class FlappyEngine {
   }
   private updateMs = 0;
   private update(dt: number, now: number): void {
-    const r = engineUpdate(
+    const dc = this.debugCollector;
+    const t0 = dc ? performance.now() : 0;
+    this.pipeActiveCount = engineUpdate(
       this.loop,
       this.state,
       this.config,
@@ -191,14 +205,14 @@ export class FlappyEngine {
       this.bg,
       this.pipePool,
       this.pipeActiveCount,
-      this.debugCollector,
       dt,
       now,
     );
-    this.pipeActiveCount = r.activeCount;
-    this.updateMs = r.updateMs;
+    this.updateMs = dc ? performance.now() - t0 : 0;
   }
   private draw(now: number): void {
+    const dc = this.debugCollector;
+    const drawT0 = dc ? performance.now() : 0;
     engineDraw(
       this.loop,
       this.state,
@@ -210,9 +224,19 @@ export class FlappyEngine {
       this.bird,
       this.prevBird,
       this.settingsIconHovered,
-      this.debugCollector,
-      this.updateMs,
       now,
     );
+    if (dc) {
+      recordDebugFrame(
+        dc,
+        this.loop,
+        this.updateMs,
+        performance.now() - drawT0,
+        now,
+        this.pipeActiveCount,
+        this.clouds.length,
+        this.bg,
+      );
+    }
   }
 }

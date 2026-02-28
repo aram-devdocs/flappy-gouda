@@ -1,7 +1,5 @@
 import type { Bird, Cloud, GameConfig, Pipe } from '@repo/types';
 import type { BackgroundSystem } from './background';
-import type { DebugMetricsCollector } from './debug-metrics';
-import { recordDebugFrame } from './engine-debug-bridge';
 import { syncPrevBird } from './engine-lifecycle';
 import type { EngineLoop } from './engine-loop';
 import type { EngineState } from './engine-state';
@@ -27,6 +25,10 @@ function trySpawnPipe(
   return newCount;
 }
 
+/**
+ * Run one simulation tick. Returns the updated active pipe count.
+ * Debug timing is handled by the caller to keep this path branch-free.
+ */
 export function engineUpdate(
   loop: EngineLoop,
   state: EngineState,
@@ -37,11 +39,9 @@ export function engineUpdate(
   bg: BackgroundSystem,
   pipePool: Pipe[],
   pipeActiveCount: number,
-  dc: DebugMetricsCollector | null,
   dt: number,
   now: number,
-): { activeCount: number; updateMs: number } {
-  const t0 = dc ? performance.now() : 0;
+): number {
   loop.globalTime = now;
   updateClouds(clouds, config, dt);
   bg.update(dt, now, state.state === 'play', loop.reducedMotion);
@@ -59,9 +59,12 @@ export function engineUpdate(
       if (r.died) state.die();
     }
   }
-  return { activeCount, updateMs: dc ? performance.now() - t0 : 0 };
+  return activeCount;
 }
 
+/**
+ * Render one frame. Debug timing is handled by the caller.
+ */
 export function engineDraw(
   loop: EngineLoop,
   state: EngineState,
@@ -73,14 +76,11 @@ export function engineDraw(
   bird: Bird,
   prevBird: Bird,
   settingsIconHovered: boolean,
-  dc: DebugMetricsCollector | null,
-  updateMs: number,
   now: number,
 ): void {
-  const drawT0 = dc ? performance.now() : 0;
-  renderer.drawSky();
-  renderer.drawBackground(bg, loop.globalTime);
-  renderer.drawNearClouds(clouds);
+  renderer.drawBgLayer(bg, now);
+  renderer.drawMgLayer(bg, clouds, now);
+  renderer.clearFg();
   renderer.drawPipes(pipePool, pipeActiveCount);
   renderer.drawGround(bg);
   if (state.state !== 'idle') {
@@ -92,16 +92,4 @@ export function engineDraw(
     renderer.drawSettingsIcon(settingsIconHovered);
   }
   loop.updateFps(now);
-  if (dc) {
-    recordDebugFrame(
-      dc,
-      loop,
-      updateMs,
-      performance.now() - drawT0,
-      now,
-      pipeActiveCount,
-      clouds.length,
-      bg,
-    );
-  }
 }

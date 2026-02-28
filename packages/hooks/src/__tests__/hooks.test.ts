@@ -337,21 +337,34 @@ describe('useGameEngine', () => {
     expect(typeof result.current.resume).toBe('function');
   });
 
-  it('creates engine when canvasRef has an element', async () => {
+  it('creates engine when containerRef has an element with canvas layers', async () => {
     const engineMod = (await import('@repo/engine')) as unknown as MockedEngineModule;
     const mockEngine = engineMod.__mockEngine;
     vi.clearAllMocks();
 
-    const canvas = document.createElement('canvas');
+    const container = document.createElement('div');
+    const bgCanvas = document.createElement('canvas');
+    const mgCanvas = document.createElement('canvas');
+    const fgCanvas = document.createElement('canvas');
+    bgCanvas.setAttribute('data-layer', 'bg');
+    mgCanvas.setAttribute('data-layer', 'mg');
+    fgCanvas.setAttribute('data-layer', 'fg');
+    container.appendChild(bgCanvas);
+    container.appendChild(mgCanvas);
+    container.appendChild(fgCanvas);
+
     renderHook(() => {
       const eng = useGameEngine();
-      (eng.canvasRef as React.MutableRefObject<HTMLCanvasElement | null>).current = canvas;
+      (eng.containerRef as React.MutableRefObject<HTMLDivElement | null>).current = container;
       return eng;
     });
 
     await act(async () => {});
 
-    expect(engineMod.FlappyEngine).toHaveBeenCalledWith(canvas, undefined);
+    expect(engineMod.FlappyEngine).toHaveBeenCalledWith(
+      { bg: bgCanvas, mg: mgCanvas, fg: fgCanvas },
+      undefined,
+    );
     expect(mockEngine.on).toHaveBeenCalledWith('stateChange', expect.any(Function));
     expect(mockEngine.on).toHaveBeenCalledWith('scoreChange', expect.any(Function));
     expect(mockEngine.on).toHaveBeenCalledWith('bestScoreChange', expect.any(Function));
@@ -365,10 +378,15 @@ describe('useGameEngine', () => {
     const mockEngine = engineMod.__mockEngine;
     vi.clearAllMocks();
 
-    const canvas = document.createElement('canvas');
+    const container = document.createElement('div');
+    for (const layer of ['bg', 'mg', 'fg']) {
+      const c = document.createElement('canvas');
+      c.setAttribute('data-layer', layer);
+      container.appendChild(c);
+    }
     const { result } = renderHook(() => {
       const eng = useGameEngine();
-      (eng.canvasRef as React.MutableRefObject<HTMLCanvasElement | null>).current = canvas;
+      (eng.containerRef as React.MutableRefObject<HTMLDivElement | null>).current = container;
       return eng;
     });
 
@@ -395,10 +413,15 @@ describe('useGameEngine', () => {
     const mockEngine = engineMod.__mockEngine;
     vi.clearAllMocks();
 
-    const canvas = document.createElement('canvas');
+    const container = document.createElement('div');
+    for (const layer of ['bg', 'mg', 'fg']) {
+      const c = document.createElement('canvas');
+      c.setAttribute('data-layer', layer);
+      container.appendChild(c);
+    }
     const { unmount } = renderHook(() => {
       const eng = useGameEngine();
-      (eng.canvasRef as React.MutableRefObject<HTMLCanvasElement | null>).current = canvas;
+      (eng.containerRef as React.MutableRefObject<HTMLDivElement | null>).current = container;
       return eng;
     });
 
@@ -406,5 +429,84 @@ describe('useGameEngine', () => {
 
     unmount();
     expect(mockEngine.destroy).toHaveBeenCalled();
+  });
+
+  // Helper: create a container with 3 canvas layers and render the hook
+  async function setupWithEngine() {
+    const engineMod = (await import('@repo/engine')) as unknown as MockedEngineModule;
+    const mockEng = engineMod.__mockEngine;
+    vi.clearAllMocks();
+
+    const container = document.createElement('div');
+    for (const layer of ['bg', 'mg', 'fg']) {
+      const c = document.createElement('canvas');
+      c.setAttribute('data-layer', layer);
+      container.appendChild(c);
+    }
+
+    const { result } = renderHook(() => {
+      const eng = useGameEngine();
+      (eng.containerRef as React.MutableRefObject<HTMLDivElement | null>).current = container;
+      return eng;
+    });
+    await act(async () => {});
+
+    const handler = (event: string) =>
+      mockEng.on.mock.calls.find((c: unknown[]) => c[0] === event)?.[1] as (
+        ...args: unknown[]
+      ) => void;
+
+    return { result, fire: handler };
+  }
+
+  it('does not update score state on scoreChange during gameplay', async () => {
+    const { result, fire } = await setupWithEngine();
+
+    act(() => fire('stateChange')('play'));
+    expect(result.current.state).toBe('play');
+    expect(result.current.score).toBe(0);
+
+    act(() => fire('scoreChange')(5));
+    expect(result.current.score).toBe(0);
+
+    act(() => fire('scoreChange')(12));
+    expect(result.current.score).toBe(0);
+
+    act(() => fire('stateChange')('dead'));
+    expect(result.current.state).toBe('dead');
+    expect(result.current.score).toBe(12);
+  });
+
+  it('flushes score to React state on pause transition', async () => {
+    const { result, fire } = await setupWithEngine();
+
+    act(() => fire('stateChange')('play'));
+    act(() => fire('scoreChange')(7));
+    expect(result.current.score).toBe(0);
+
+    act(() => fire('stateChange')('paused'));
+    expect(result.current.state).toBe('paused');
+    expect(result.current.score).toBe(7);
+  });
+
+  it('throttles fps state updates', async () => {
+    const { result, fire } = await setupWithEngine();
+
+    act(() => fire('fpsUpdate')(60));
+    expect(result.current.fps).toBe(60);
+
+    act(() => fire('fpsUpdate')(55));
+    expect(result.current.fps).toBe(60);
+  });
+
+  it('flushes latest fps on state transition regardless of throttle', async () => {
+    const { result, fire } = await setupWithEngine();
+
+    act(() => fire('fpsUpdate')(60));
+    act(() => fire('fpsUpdate')(42));
+    expect(result.current.fps).toBe(60);
+
+    act(() => fire('stateChange')('play'));
+    expect(result.current.fps).toBe(42);
   });
 });

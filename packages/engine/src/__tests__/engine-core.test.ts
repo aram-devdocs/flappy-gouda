@@ -6,7 +6,7 @@ import { BASE_H, BASE_W, DEFAULT_CONFIG } from '../config';
 import { EngineEventEmitter } from '../engine-events';
 import { syncPrevBird } from '../engine-lifecycle';
 import { EngineLoop } from '../engine-loop';
-import { createBgSystem, createRenderer, initClouds, setupCanvas } from '../engine-setup';
+import { createBgSystem, createRenderer, initClouds, setupCanvasStack } from '../engine-setup';
 import { EngineState } from '../engine-state';
 import { roundRectPath } from '../math';
 
@@ -861,72 +861,61 @@ describe('roundRectPath', () => {
 // engine-setup.ts
 // ---------------------------------------------------------------------------
 
-describe('setupCanvas', () => {
+describe('setupCanvasStack', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('sets canvas dimensions and returns dpr', () => {
-    vi.stubGlobal('window', { ...window, innerWidth: 1024, devicePixelRatio: 2 });
-    const ctx = makeCanvasContext();
-    const canvas = {
-      width: 0,
-      height: 0,
-      style: { width: '', height: '' },
-    } as unknown as HTMLCanvasElement;
+  function makeStack() {
+    const make = () =>
+      ({ width: 0, height: 0, style: { width: '', height: '' } }) as unknown as HTMLCanvasElement;
+    return { bg: make(), mg: make(), fg: make() };
+  }
 
-    const dpr = setupCanvas(canvas, ctx);
+  it('sets canvas dimensions on all layers and returns dpr', () => {
+    vi.stubGlobal('window', { ...window, innerWidth: 1024, devicePixelRatio: 2 });
+    const stack = makeStack();
+
+    const dpr = setupCanvasStack(stack);
 
     expect(dpr).toBe(2);
-    expect(canvas.width).toBe(BASE_W * 2);
-    expect(canvas.height).toBe(BASE_H * 2);
-    expect(ctx.scale).toHaveBeenCalledWith(2, 2);
+    for (const canvas of [stack.bg, stack.mg, stack.fg]) {
+      expect(canvas.width).toBe(BASE_W * 2);
+      expect(canvas.height).toBe(BASE_H * 2);
+    }
   });
 
   it('computes CSS dimensions when innerWidth is narrow', () => {
     vi.stubGlobal('window', { ...window, innerWidth: 300, devicePixelRatio: 1 });
-    const ctx = makeCanvasContext();
-    const canvas = {
-      width: 0,
-      height: 0,
-      style: { width: '', height: '' },
-    } as unknown as HTMLCanvasElement;
+    const stack = makeStack();
 
-    const dpr = setupCanvas(canvas, ctx);
+    const dpr = setupCanvasStack(stack);
 
     expect(dpr).toBe(1);
     const maxCssW = Math.min(BASE_W, 300 - 48);
     const cssScale = maxCssW / BASE_W;
-    expect(canvas.style.width).toBe(`${Math.round(BASE_W * cssScale)}px`);
-    expect(canvas.style.height).toBe(`${Math.round(BASE_H * cssScale)}px`);
+    for (const canvas of [stack.bg, stack.mg, stack.fg]) {
+      expect(canvas.style.width).toBe(`${Math.round(BASE_W * cssScale)}px`);
+      expect(canvas.style.height).toBe(`${Math.round(BASE_H * cssScale)}px`);
+    }
   });
 
   it('defaults dpr to 1 when devicePixelRatio is falsy', () => {
     vi.stubGlobal('window', { ...window, innerWidth: 1024, devicePixelRatio: 0 });
-    const ctx = makeCanvasContext();
-    const canvas = {
-      width: 0,
-      height: 0,
-      style: { width: '', height: '' },
-    } as unknown as HTMLCanvasElement;
+    const stack = makeStack();
 
-    const dpr = setupCanvas(canvas, ctx);
+    const dpr = setupCanvasStack(stack);
     expect(dpr).toBe(1);
-    expect(canvas.width).toBe(BASE_W);
+    expect(stack.bg.width).toBe(BASE_W);
   });
 
   it('clamps CSS width to BASE_W when window is very wide', () => {
     vi.stubGlobal('window', { ...window, innerWidth: 2000, devicePixelRatio: 1 });
-    const ctx = makeCanvasContext();
-    const canvas = {
-      width: 0,
-      height: 0,
-      style: { width: '', height: '' },
-    } as unknown as HTMLCanvasElement;
+    const stack = makeStack();
 
-    setupCanvas(canvas, ctx);
-    expect(canvas.style.width).toBe(`${BASE_W}px`);
-    expect(canvas.style.height).toBe(`${BASE_H}px`);
+    setupCanvasStack(stack);
+    expect(stack.fg.style.width).toBe(`${BASE_W}px`);
+    expect(stack.fg.style.height).toBe(`${BASE_H}px`);
   });
 });
 
@@ -979,7 +968,7 @@ describe('createRenderer', () => {
     const colors: GameColors = { ...DEFAULT_COLORS };
     const fonts = buildFontCache('"Poppins", sans-serif');
 
-    const renderer = createRenderer(ctx, cfg, colors, fonts, 2);
+    const renderer = createRenderer({ bg: ctx, mg: ctx, fg: ctx }, cfg, colors, fonts, 2);
 
     expect(renderer).toBeDefined();
     expect(typeof renderer.drawSky).toBe('function');

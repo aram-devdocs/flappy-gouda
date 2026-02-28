@@ -3,7 +3,7 @@ import { atIndex } from './assert';
 import type { CachedFonts } from './cache';
 import { PIPE_LIP } from './config';
 import { DEG_TO_RAD, TAU } from './math';
-import type { PipeLipCache } from './renderer-prerender';
+import type { PipeLipCache, SettingsIconCache } from './renderer-prerender';
 
 /** Bounding rectangle for a UI icon in logical (CSS) pixels. */
 export interface IconBounds {
@@ -17,6 +17,18 @@ export interface IconBounds {
   h: number;
 }
 
+/** Settings icon dimensions in logical pixels. */
+export const ICON_SIZE = 22;
+export const ICON_PAD = 10;
+
+const SCORE_SHADOW_ALPHA = 0.12;
+const SCORE_SHADOW_OFFSET_X = 2;
+const SCORE_SHADOW_OFFSET_Y = 52;
+const SCORE_Y = 50;
+const GEAR_INNER_RATIO = 0.62;
+const GEAR_HOLE_RATIO = 0.3;
+const GEAR_TEETH = 8;
+
 /** Draw the bird sprite (cheese image or fallback circle) at the given position with rotation. */
 export function drawBird(
   ctx: CanvasRenderingContext2D,
@@ -27,19 +39,20 @@ export function drawBird(
   spriteImg: HTMLImageElement | null,
   colors: GameColors,
 ): void {
-  const cx = birdX + birdSize / 2;
-  const cy = y + birdSize / 2;
+  const half = (birdSize / 2) | 0;
+  const cx = (birdX + half) | 0;
+  const cy = (y + half) | 0;
   const rad = rot * DEG_TO_RAD;
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(rad);
 
   if (spriteImg) {
-    ctx.drawImage(spriteImg, -birdSize / 2, -birdSize / 2, birdSize, birdSize);
+    ctx.drawImage(spriteImg, -half, -half, birdSize, birdSize);
   } else {
     ctx.fillStyle = colors.violet;
     ctx.beginPath();
-    ctx.arc(0, 0, birdSize / 2, 0, TAU);
+    ctx.arc(0, 0, half, 0, TAU);
     ctx.fill();
   }
   ctx.restore();
@@ -56,59 +69,53 @@ export function drawPipes(
   pipeGrad: CanvasGradient | null,
   pipeLip: PipeLipCache,
 ): void {
+  const lipOffsetX = (PIPE_LIP.extraW / 2) | 0;
   for (let i = 0; i < activeCount; i++) {
     const p = atIndex(pipes, i);
-    const gapBottom = p.topH + (p.gap > 0 ? p.gap : fallbackGap);
-
-    ctx.save();
-    ctx.translate(p.x, 0);
+    const px = p.x | 0;
+    const topH = p.topH | 0;
+    const gapBottom = (p.topH + (p.gap > 0 ? p.gap : fallbackGap)) | 0;
+    const lipX = px - lipOffsetX;
 
     if (pipeGrad) {
       ctx.fillStyle = pipeGrad;
-      ctx.fillRect(0, -4, pipeWidth, p.topH + 4);
+      ctx.fillRect(px, -4, pipeWidth, topH + 4);
     }
     if (pipeLip.canvas) {
-      ctx.drawImage(
-        pipeLip.canvas,
-        -PIPE_LIP.extraW / 2,
-        p.topH - PIPE_LIP.height,
-        pipeLip.logW,
-        pipeLip.logH,
-      );
+      ctx.drawImage(pipeLip.canvas, lipX, topH - PIPE_LIP.height, pipeLip.logW, pipeLip.logH);
     }
 
     if (pipeGrad) {
       ctx.fillStyle = pipeGrad;
-      ctx.fillRect(0, gapBottom, pipeWidth, height - gapBottom);
+      ctx.fillRect(px, gapBottom, pipeWidth, height - gapBottom);
     }
     if (pipeLip.canvas) {
-      ctx.drawImage(pipeLip.canvas, -PIPE_LIP.extraW / 2, gapBottom, pipeLip.logW, pipeLip.logH);
+      ctx.drawImage(pipeLip.canvas, lipX, gapBottom, pipeLip.logW, pipeLip.logH);
     }
-
-    ctx.restore();
   }
 }
 
-/** Draw the current score centered at the top of the canvas with a drop shadow. */
+/**
+ * Draw the current score centered at the top of the canvas with a drop shadow.
+ * Accepts a pre-cached string to avoid per-frame String() allocation.
+ */
 export function drawScore(
   ctx: CanvasRenderingContext2D,
-  score: number,
+  scoreStr: string,
   width: number,
   fonts: CachedFonts,
   colors: GameColors,
 ): void {
+  const cx = (width / 2) | 0;
   ctx.font = fonts.score;
   ctx.textAlign = 'center';
   ctx.fillStyle = colors.navy;
-  ctx.globalAlpha = 0.12;
-  ctx.fillText(String(score), width / 2 + 2, 52);
+  ctx.globalAlpha = SCORE_SHADOW_ALPHA;
+  ctx.fillText(scoreStr, cx + SCORE_SHADOW_OFFSET_X, SCORE_SHADOW_OFFSET_Y);
   ctx.globalAlpha = 1;
   ctx.fillStyle = colors.magenta;
-  ctx.fillText(String(score), width / 2, 50);
+  ctx.fillText(scoreStr, cx, SCORE_Y);
 }
-
-const ICON_SIZE = 22;
-const ICON_PAD = 10;
 
 /** Compute the bounding rectangle for the settings gear icon. */
 export function getSettingsIconBounds(width: number): IconBounds {
@@ -126,9 +133,9 @@ export function drawSettingsIcon(
   const cx = b.x + b.w / 2;
   const cy = b.y + b.h / 2;
   const outer = b.w / 2;
-  const inner = outer * 0.62;
-  const hole = outer * 0.3;
-  const teeth = 8;
+  const inner = outer * GEAR_INNER_RATIO;
+  const hole = outer * GEAR_HOLE_RATIO;
+  const teeth = GEAR_TEETH;
 
   ctx.save();
   ctx.globalAlpha = hovered ? 0.7 : 0.35;
@@ -148,6 +155,19 @@ export function drawSettingsIcon(
   ctx.arc(cx, cy, hole, 0, TAU, true);
   ctx.fill('evenodd');
   ctx.restore();
+}
+
+/** Draw a pre-rendered settings icon from cache, avoiding per-frame path computation. */
+export function drawSettingsIconCached(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  cache: SettingsIconCache,
+  hovered: boolean,
+): void {
+  const variant = hovered ? cache.hovered : cache.normal;
+  if (!variant) return;
+  const b = getSettingsIconBounds(width);
+  ctx.drawImage(variant, b.x | 0, b.y | 0, cache.logW, cache.logH);
 }
 
 /** Return true if the given logical coordinates fall within the settings icon bounds. */

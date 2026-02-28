@@ -9,7 +9,15 @@ export type { LogLevel, LogEntry } from './logger';
 export { sanitizeFontFamily, sanitizeColors } from './sanitize';
 
 // Draw functions
-export { drawBird, drawPipes, drawScore, drawSettingsIcon } from './renderer-entities';
+export {
+  drawBird,
+  drawPipes,
+  drawScore,
+  drawSettingsIcon,
+  drawSettingsIconCached,
+  ICON_SIZE,
+  ICON_PAD,
+} from './renderer-entities';
 export {
   drawBuilding,
   drawTree,
@@ -17,15 +25,26 @@ export {
   drawCloudsPrerendered,
 } from './renderer-background';
 export { drawGround, drawSky } from './renderer-ground';
-export { prerenderCloud, buildPipeLipCache, buildGradients } from './renderer-prerender';
+export {
+  prerenderCloud,
+  buildPipeLipCache,
+  buildSettingsIconCache,
+  buildGradients,
+} from './renderer-prerender';
+export {
+  prerenderSkylineSegment,
+  prerenderBuilding,
+  prerenderTree,
+} from './renderer-prerender-entities';
 export { generateSkylineSegment } from './skyline';
 export { loadCheeseImage } from './cheese';
 export { buildFontCache } from './cache';
 export { Renderer } from './renderer';
 
 // Supporting types
+export type { CanvasContexts } from './renderer';
 export type { IconBounds } from './renderer-entities';
-export type { PipeLipCache, GradientCache } from './renderer-prerender';
+export type { PipeLipCache, SettingsIconCache, GradientCache } from './renderer-prerender';
 export type { CachedFonts } from './cache';
 
 // Constants needed by stories

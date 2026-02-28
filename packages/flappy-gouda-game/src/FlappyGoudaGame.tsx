@@ -41,6 +41,7 @@ export function FlappyGoudaGame({
   nickname,
 }: FlappyGoudaGameProps) {
   const {
+    containerRef,
     canvasRef,
     engineRef,
     engineReady,
@@ -147,7 +148,7 @@ export function FlappyGoudaGame({
         }
         footer={null}
       >
-        <GameCanvas ref={canvasRef} blurred={isOverlayVisible} />
+        <GameCanvas ref={containerRef} blurred={isOverlayVisible} />
         <FpsCounter fps={fps} visible={showFps} />
         <TitleScreen visible={state === 'idle'} bestScore={currentBest} onPlay={handlePlay} />
         <GameOverScreen visible={state === 'dead'} score={score} bestScore={currentBest} />

@@ -75,6 +75,7 @@ function FullScenePreview({ score, birdY }: { score: number; birdY: number }) {
           type: 'house',
           windows: 2,
           speed: 0.18,
+          _canvas: null,
           _cacheOffX: 0,
           _cacheOffY: 0,
           _cacheW: 35,
@@ -88,6 +89,7 @@ function FullScenePreview({ score, birdY }: { score: number; birdY: number }) {
           type: 'apartment',
           windows: 3,
           speed: 0.18,
+          _canvas: null,
           _cacheOffX: 0,
           _cacheOffY: 0,
           _cacheW: 30,
@@ -101,6 +103,7 @@ function FullScenePreview({ score, birdY }: { score: number; birdY: number }) {
           type: 'office',
           windows: 4,
           speed: 0.18,
+          _canvas: null,
           _cacheOffX: 0,
           _cacheOffY: 0,
           _cacheW: 28,
@@ -112,9 +115,45 @@ function FullScenePreview({ score, birdY }: { score: number; birdY: number }) {
       // Trees
       ctx.globalAlpha = BG.treeAlpha;
       const trees: Tree[] = [
-        { x: 80, y: GROUND_Y, w: 12, h: 30, type: 'pine', speed: 0.35 },
-        { x: 200, y: GROUND_Y, w: 16, h: 28, type: 'round', speed: 0.35 },
-        { x: 320, y: GROUND_Y, w: 10, h: 32, type: 'pine', speed: 0.35 },
+        {
+          x: 80,
+          y: GROUND_Y,
+          w: 12,
+          h: 30,
+          type: 'pine',
+          speed: 0.35,
+          _canvas: null,
+          _cacheOffX: 0,
+          _cacheOffY: 0,
+          _cacheW: 0,
+          _cacheH: 0,
+        },
+        {
+          x: 200,
+          y: GROUND_Y,
+          w: 16,
+          h: 28,
+          type: 'round',
+          speed: 0.35,
+          _canvas: null,
+          _cacheOffX: 0,
+          _cacheOffY: 0,
+          _cacheW: 0,
+          _cacheH: 0,
+        },
+        {
+          x: 320,
+          y: GROUND_Y,
+          w: 10,
+          h: 32,
+          type: 'pine',
+          speed: 0.35,
+          _canvas: null,
+          _cacheOffX: 0,
+          _cacheOffY: 0,
+          _cacheW: 0,
+          _cacheH: 0,
+        },
       ];
       for (const t of trees) drawTree(ctx, t, DEFAULT_COLORS);
       ctx.globalAlpha = 1;
@@ -138,7 +177,7 @@ function FullScenePreview({ score, birdY }: { score: number; birdY: number }) {
       drawBird(ctx, birdY, 0, 70, 28, null, DEFAULT_COLORS);
 
       // Score
-      drawScore(ctx, score, W, fonts, DEFAULT_COLORS);
+      drawScore(ctx, String(score), W, fonts, DEFAULT_COLORS);
     },
     [score, birdY, clouds],
   );

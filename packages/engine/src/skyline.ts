@@ -22,7 +22,19 @@ export function generateSkylineSegment(
     });
     cx += w + 2 + Math.random() * 6;
   }
-  return { x: startX, groundY, city, buildings, totalW: cx, speed: BG.farSpeed };
+  return {
+    x: startX,
+    groundY,
+    city,
+    buildings,
+    totalW: cx,
+    speed: BG.farSpeed,
+    _canvas: null,
+    _cacheOffX: 0,
+    _cacheOffY: 0,
+    _cacheW: 0,
+    _cacheH: 0,
+  };
 }
 
 function getSkylineHeight(city: SkylineCity): number {

@@ -107,6 +107,11 @@ function makeSkylineSegment(overrides: Partial<SkylineSegment> = {}): SkylineSeg
     buildings: [makeSkylineBuilding()],
     totalW: 120,
     speed: 0.08,
+    _canvas: null,
+    _cacheOffX: 0,
+    _cacheOffY: 0,
+    _cacheW: 0,
+    _cacheH: 0,
     ...overrides,
   };
 }
@@ -120,6 +125,7 @@ function makeBuilding(overrides: Partial<Building> = {}): Building {
     type: 'house',
     windows: 2,
     speed: 0.18,
+    _canvas: null,
     _cacheOffX: 0,
     _cacheOffY: 0,
     _cacheW: 0,
@@ -136,6 +142,11 @@ function makeTree(overrides: Partial<Tree> = {}): Tree {
     h: 28,
     type: 'round',
     speed: 0.35,
+    _canvas: null,
+    _cacheOffX: 0,
+    _cacheOffY: 0,
+    _cacheW: 0,
+    _cacheH: 0,
     ...overrides,
   };
 }
@@ -737,8 +748,9 @@ describe('Renderer', () => {
       const pipes: Pipe[] = [{ x: 100, topH: 80, scored: false, gap: 162 }];
       renderer.drawPipes(pipes, 1);
 
-      // drawPipes calls translate for each pipe
-      expect(ctx.translate).toHaveBeenCalled();
+      // drawPipes uses direct coordinate offsets, no save/translate/restore
+      expect(ctx.save).not.toHaveBeenCalled();
+      expect(ctx.translate).not.toHaveBeenCalled();
     });
 
     it('does nothing when activeCount is 0', () => {
