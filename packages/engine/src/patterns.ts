@@ -137,9 +137,9 @@ function rapids(p: PatternParams): PipeIntent[] {
 
 function drift(p: PatternParams): PipeIntent[] {
   const out: PipeIntent[] = [];
-  const gap = p.baseGap * 1.15;
-  const factor = 1.2 + (1 - p.intensity) * 0.2;
-  const amp = 20 + (1 - p.intensity) * 20;
+  const gap = p.baseGap * 1.05;
+  const factor = 1.05 + (1 - p.intensity) * 0.1;
+  const amp = 15 + (1 - p.intensity) * 15;
   const freq = 0.5;
   for (let i = 0; i < p.count; i++) {
     const raw = p.startCenter + amp * Math.sin(i * freq);

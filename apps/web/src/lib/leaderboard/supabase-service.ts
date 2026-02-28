@@ -65,19 +65,23 @@ export class SupabaseLeaderboardService implements LeaderboardService {
     }
 
     // Try edge function first (server-side validation)
-    const { data, error } = await supabase.functions.invoke('validate-score', {
-      body: parsed,
-    });
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-score', {
+        body: parsed,
+      });
 
-    if (!error && data) {
-      return {
-        id: data.id,
-        nickname: data.nickname,
-        score: data.score,
-        difficulty: data.difficulty,
-        createdAt: new Date().toISOString(),
-        rank: 0,
-      };
+      if (!error && data) {
+        return {
+          id: data.id,
+          nickname: data.nickname,
+          score: data.score,
+          difficulty: data.difficulty,
+          createdAt: new Date().toISOString(),
+          rank: 0,
+        };
+      }
+    } catch {
+      // Edge function unavailable (expected in local dev)
     }
 
     // Fallback: direct DB upsert (local dev when edge function is unavailable)

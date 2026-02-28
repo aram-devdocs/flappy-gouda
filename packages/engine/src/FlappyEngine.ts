@@ -176,6 +176,10 @@ export class FlappyEngine {
     const profile = getDifficultyProfile(key);
     this.progression = new ProgressionManager(profile, this.config, this.events);
     this.director = new PipeDirector(this.progression, profile, this.config);
+    if (this.debugCollector) {
+      const dc = this.debugCollector;
+      this.director.setLogFn((type, msg, data) => dc.logEvent(type, msg, data));
+    }
   }
   private doReset(): void {
     resetEngine(this.state, this.loop, this.bird, this.prevBird, this.config, (n) => {

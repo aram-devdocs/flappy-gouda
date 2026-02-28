@@ -1,15 +1,8 @@
 import type { FlappyEngine } from '@repo/engine';
 import type { BestScores, DifficultyKey, ProgressionState } from '@repo/types';
-import { Difficulty, GameState as GS } from '@repo/types';
+import { GameState as GS } from '@repo/types';
 import type { RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
-
-export const DEATH_FLAVOR: Record<DifficultyKey, string> = {
-  [Difficulty.Easy]: 'The adventure continues next time.',
-  [Difficulty.Normal]: 'So close. One more try?',
-  [Difficulty.Hard]: 'The Gauntlet claims another.',
-  [Difficulty.Souls]: 'The Crucible spares no one.',
-};
 
 export function useDeathStats(
   state: string,

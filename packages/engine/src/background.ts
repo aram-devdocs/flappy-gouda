@@ -100,6 +100,7 @@ export class BackgroundSystem {
         seg.x = this.layers.maxRightSkyline + gap;
         this.layers.maxRightSkyline = seg.x + seg.totalW;
         seg.city = atIndex(SKYLINE_CITIES, Math.floor(Math.random() * SKYLINE_CITIES.length));
+        seg._canvas = null;
       }
     }
   }

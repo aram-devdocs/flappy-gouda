@@ -50,7 +50,17 @@ export interface DebugSystemInfo {
 /** A single timestamped debug log entry. */
 export interface DebugLogEntry {
   timestamp: number;
-  type: 'state' | 'score' | 'difficulty' | 'jank' | 'recording' | 'info';
+  type:
+    | 'state'
+    | 'score'
+    | 'difficulty'
+    | 'jank'
+    | 'recording'
+    | 'info'
+    | 'director'
+    | 'phase'
+    | 'pattern'
+    | 'feel';
   message: string;
   data?: Record<string, unknown>;
 }

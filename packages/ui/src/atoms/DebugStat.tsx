@@ -53,6 +53,10 @@ const TYPE_COLORS: Record<string, string> = {
   jank: STATUS_COLORS.error,
   recording: cssVar('cyan'),
   info: STATUS_COLORS.neutral,
+  director: cssVar('magenta'),
+  phase: cssVar('midviolet'),
+  pattern: cssVar('navy'),
+  feel: cssVar('cyan'),
 };
 
 export function typeBadgeStyle(type: string): React.CSSProperties {

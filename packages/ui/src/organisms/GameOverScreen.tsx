@@ -17,29 +17,17 @@ export interface GameOverScreenProps {
   bestScore: number;
   isNewBest?: boolean;
   rank?: number | null;
-  phaseName?: string | null;
-  clutchCount?: number;
-  longestCleanStreak?: number;
-  flavorText?: string;
 }
 
-/** Full-screen overlay shown after death with score, stats, rank, and retry hint. */
+/** Full-screen overlay shown after death with score, rank, and retry hint. */
 export function GameOverScreen({
   visible,
   score,
   bestScore,
   isNewBest,
   rank,
-  phaseName,
-  clutchCount,
-  longestCleanStreak,
-  flavorText,
 }: GameOverScreenProps) {
   if (!visible) return null;
-
-  const hasStats =
-    (clutchCount != null && clutchCount > 0) ||
-    (longestCleanStreak != null && longestCleanStreak > 0);
 
   return (
     <dialog
@@ -73,23 +61,6 @@ export function GameOverScreen({
         {!isNewBest && <p style={bestLabelStyle}>Best: {bestScore}</p>}
 
         {rank != null && rank > 0 && <p style={rankStyle}>Rank #{rank}</p>}
-
-        {phaseName && <p style={phaseStyle}>Reached: {phaseName}</p>}
-
-        {hasStats && (
-          <div style={statsRowStyle}>
-            {clutchCount != null && clutchCount > 0 && (
-              <span style={statStyle}>
-                {clutchCount} close call{clutchCount !== 1 ? 's' : ''}
-              </span>
-            )}
-            {longestCleanStreak != null && longestCleanStreak > 0 && (
-              <span style={statStyle}>Best streak: {longestCleanStreak}</span>
-            )}
-          </div>
-        )}
-
-        {flavorText && <p style={flavorStyle}>{flavorText}</p>}
 
         <p style={retryStyle}>Tap or Space to retry</p>
       </div>
@@ -143,37 +114,6 @@ const rankStyle: React.CSSProperties = {
   fontWeight: FONT_WEIGHT.bold,
   color: cssVar('cyan'),
   margin: `0 0 ${SPACING[1]}`,
-};
-
-const phaseStyle: React.CSSProperties = {
-  fontSize: FONT_SIZE.sm,
-  fontWeight: FONT_WEIGHT.normal,
-  color: cssVar('navy'),
-  opacity: OPACITY.prominent,
-  margin: `0 0 ${SPACING[2]}`,
-};
-
-const statsRowStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'center',
-  gap: SPACING[3],
-  marginBottom: SPACING[2],
-};
-
-const statStyle: React.CSSProperties = {
-  fontSize: FONT_SIZE.xs,
-  fontWeight: FONT_WEIGHT.semibold,
-  color: cssVar('navy'),
-  opacity: OPACITY.visible,
-};
-
-const flavorStyle: React.CSSProperties = {
-  fontSize: FONT_SIZE.sm,
-  fontWeight: FONT_WEIGHT.normal,
-  color: cssVar('navy'),
-  opacity: OPACITY.soft,
-  fontStyle: 'italic',
-  margin: `0 0 ${SPACING[3]}`,
 };
 
 const retryStyle: React.CSSProperties = {

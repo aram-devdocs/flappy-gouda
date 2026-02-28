@@ -8,11 +8,32 @@ export interface LiveRankResult {
   improving: boolean;
 }
 
+function computeRank(
+  score: number,
+  thresholds: number[],
+  existingRank: number | null,
+  existingScore: number,
+): number | null {
+  if (thresholds.length === 0 && existingRank == null) return null;
+
+  let lo = 0;
+  let hi = thresholds.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if ((thresholds[mid] ?? 0) >= score) lo = mid + 1;
+    else hi = mid;
+  }
+  const searchRank = lo + 1;
+
+  if (existingRank != null && score <= existingScore) return existingRank;
+  return searchRank;
+}
+
 /**
  * Computes an approximate leaderboard rank in real-time during gameplay.
- * Snapshots the leaderboard scores on play-start, then binary-searches on
- * each engine scoreChange event. Only triggers a React re-render when rank
- * actually changes.
+ * Snapshots OTHER players' scores on play-start, then binary-searches on
+ * each engine scoreChange event. Accounts for the player's existing entry
+ * so rank never regresses below their current standing.
  */
 export function useLiveRank(
   engineRef: React.RefObject<FlappyEngine | null>,
@@ -23,6 +44,8 @@ export function useLiveRank(
   const [rank, setRank] = useState<number | null>(null);
   const [improving, setImproving] = useState(false);
   const thresholdsRef = useRef<number[]>([]);
+  const playerRankRef = useRef<number | null>(null);
+  const playerScoreRef = useRef(-1);
   const prevRankRef = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -35,7 +58,13 @@ export function useLiveRank(
 
   useEffect(() => {
     if (state === GS.Play && leaderboard) {
-      thresholdsRef.current = leaderboard.entries.map((e) => e.score).sort((a, b) => b - a);
+      const playerId = leaderboard.playerEntry?.id ?? null;
+      playerRankRef.current = leaderboard.playerEntry?.rank ?? null;
+      playerScoreRef.current = leaderboard.playerEntry?.score ?? -1;
+      thresholdsRef.current = leaderboard.entries
+        .filter((e) => e.id !== playerId)
+        .map((e) => e.score)
+        .sort((a, b) => b - a);
       setRank(null);
       prevRankRef.current = null;
       setImproving(false);
@@ -48,17 +77,13 @@ export function useLiveRank(
     if (!engine || !engineReady || state !== GS.Play) return;
 
     const onScore = (score: number) => {
-      const t = thresholdsRef.current;
-      if (t.length === 0) return;
-
-      let lo = 0;
-      let hi = t.length;
-      while (lo < hi) {
-        const mid = (lo + hi) >>> 1;
-        if ((t[mid] ?? 0) >= score) lo = mid + 1;
-        else hi = mid;
-      }
-      const newRank = lo + 1;
+      const newRank = computeRank(
+        score,
+        thresholdsRef.current,
+        playerRankRef.current,
+        playerScoreRef.current,
+      );
+      if (newRank == null) return;
 
       setRank((prev) => {
         if (prev === newRank) return prev;

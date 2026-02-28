@@ -16,8 +16,8 @@ import { drawFarLayer, drawMidLayer } from './renderer-layers';
 import { buildPipeLipCache, buildSettingsIconCache } from './renderer-prerender';
 import type { GradientCache, PipeLipCache, SettingsIconCache } from './renderer-prerender';
 
-const BG_REDRAW_MS = 500;
-const MG_REDRAW_MS = 67;
+const BG_REDRAW_MS = 0;
+const MG_REDRAW_MS = 0;
 
 /** Canvas 2D renderer supporting layered or single-context rendering. */
 export class Renderer {

@@ -8,7 +8,7 @@ import type {
   DebugSystemInfo,
 } from '@repo/types';
 import { GameState as GS } from '@repo/types';
-import type { GameState } from '@repo/types';
+import type { EngineEvents, GameState } from '@repo/types';
 import { buildDebugSnapshot } from './debug-snapshot';
 import type { EngineEventEmitter } from './engine-events';
 
@@ -160,9 +160,7 @@ export class DebugMetricsCollector {
   dispose(): void {
     for (const unsub of this.unsubs) unsub();
     this.unsubs = [];
-    this.frameCount = 0;
-    this.writeIndex = 0;
-    this.jankCount = 0;
+    this.frameCount = this.writeIndex = this.jankCount = 0;
     this.logEntries = [];
     this.recording = false;
     this.currentSession = null;
@@ -180,13 +178,21 @@ export class DebugMetricsCollector {
     };
     const onScore = (score: number) => this.logEvent('score', `Score: ${score}`);
     const onDiff = (key: string) => this.logEvent('difficulty', `Difficulty: ${key}`);
-    this.events.on('stateChange', onState);
-    this.events.on('scoreChange', onScore);
-    this.events.on('difficultyChange', onDiff);
-    this.unsubs.push(
-      () => this.events.off('stateChange', onState),
-      () => this.events.off('scoreChange', onScore),
-      () => this.events.off('difficultyChange', onDiff),
-    );
+    const onPhase = (n: string) => this.logEvent('phase', `Phase: ${n}`);
+    const onMile = (s: number, l: string, c: string) =>
+      this.logEvent('feel', `Milestone ${s}: ${l} (${c})`);
+    const onNear = () => this.logEvent('feel', 'Near miss!');
+    const pairs: [string, (...a: never[]) => void][] = [
+      ['stateChange', onState],
+      ['scoreChange', onScore],
+      ['difficultyChange', onDiff],
+      ['phaseChange', onPhase],
+      ['milestone', onMile],
+      ['nearMiss', onNear],
+    ];
+    for (const [evt, cb] of pairs) {
+      this.events.on(evt as keyof EngineEvents, cb as never);
+      this.unsubs.push(() => this.events.off(evt as keyof EngineEvents, cb as never));
+    }
   }
 }

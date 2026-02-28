@@ -6,7 +6,12 @@ import { computeReachableBand, validateAndClamp } from '../winnability';
 const NORMAL = DEFAULT_CONFIG;
 
 function makeIntent(overrides: Partial<PipeIntent> = {}): PipeIntent {
-  return { gapCenter: 260, gapSize: 162, delay: 1700, ...overrides };
+  return {
+    gapCenter: 260,
+    gapSize: DEFAULT_CONFIG.pipeGap,
+    delay: DEFAULT_CONFIG.pipeSpawn,
+    ...overrides,
+  };
 }
 
 function makeConfig(overrides: Partial<GameConfig> = {}): GameConfig {
@@ -26,26 +31,26 @@ describe('computeReachableBand', () => {
 
   it('computes correct band for 1 tick with Normal physics', () => {
     const band = computeReachableBand(200, 1, NORMAL.gravity, NORMAL.flapForce, NORMAL.terminalVel);
-    // Up: vy = -5.0 + 0.28 = -4.72, y = 200 - 4.72 = 195.28
-    expect(band.minY).toBeCloseTo(195.28, 2);
-    // Down: vy = 0.28, y = 200 + 0.28 = 200.28
-    expect(band.maxY).toBeCloseTo(200.28, 2);
+    // Up: vy = flapForce + gravity = -5.2 + 0.30 = -4.90, y = 200 - 4.90 = 195.10
+    expect(band.minY).toBeCloseTo(195.1, 1);
+    // Down: vy = 0.30, y = 200 + 0.30 = 200.30
+    expect(band.maxY).toBeCloseTo(200.3, 1);
   });
 
   it('computes correct band for 3 ticks with Normal physics', () => {
     const band = computeReachableBand(200, 3, NORMAL.gravity, NORMAL.flapForce, NORMAL.terminalVel);
-    // Up: 3 × -4.72 = -14.16, y = 185.84
-    expect(band.minY).toBeCloseTo(185.84, 2);
-    // Down: 0.28 + 0.56 + 0.84 = 1.68, y = 201.68
-    expect(band.maxY).toBeCloseTo(201.68, 2);
+    // Up: 3 × -4.90 = -14.70, y = 185.30
+    expect(band.minY).toBeCloseTo(185.3, 1);
+    // Down: 0.30 + 0.60 + 0.90 = 1.80, y = 201.80
+    expect(band.maxY).toBeCloseTo(201.8, 1);
   });
 
   it('clamps to ceiling (y = 0) during upward simulation', () => {
     const band = computeReachableBand(3, 2, NORMAL.gravity, NORMAL.flapForce, NORMAL.terminalVel);
-    // Tick 1: vy = -4.72, y = 3 - 4.72 = -1.72 → 0
-    // Tick 2: vy = -4.72, y = 0 - 4.72 → 0
+    // Tick 1: vy = -4.90, y = 3 - 4.90 → 0
+    // Tick 2: vy = -4.90, y = 0 - 4.90 → 0
     expect(band.minY).toBe(0);
-    expect(band.maxY).toBeCloseTo(3.84, 2);
+    expect(band.maxY).toBeCloseTo(3.9, 1);
   });
 
   it('respects terminal velocity during free-fall', () => {

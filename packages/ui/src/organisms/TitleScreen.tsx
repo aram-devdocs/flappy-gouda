@@ -25,7 +25,6 @@ export interface TitleScreenProps {
   nicknameError?: string;
   nicknameChecking?: boolean;
   hasLeaderboard?: boolean;
-  difficultySubtitle?: string;
   difficulty?: DifficultyKey;
 }
 
@@ -41,7 +40,6 @@ export function TitleScreen({
   nicknameError,
   nicknameChecking,
   hasLeaderboard,
-  difficultySubtitle,
 }: TitleScreenProps) {
   if (!visible) return null;
 
@@ -84,7 +82,6 @@ export function TitleScreen({
         <div style={{ fontSize: FONT_SIZE['6xl'], marginBottom: SPACING[2] }}>
           <CheeseIcon />
         </div>
-        {difficultySubtitle && <p style={subtitleStyle}>{difficultySubtitle}</p>}
         <p style={{ ...hintStyle, margin: `0 0 ${SPACING[2]}` }}>
           <Kbd>Space</Kbd> <Kbd>Click</Kbd> <span>to flap</span>
         </p>
@@ -150,15 +147,6 @@ const bestStyle: React.CSSProperties = {
   fontWeight: FONT_WEIGHT.semibold,
   color: cssVar('magenta'),
   margin: `0 0 ${SPACING[2]}`,
-};
-
-const subtitleStyle: React.CSSProperties = {
-  fontSize: FONT_SIZE.sm,
-  fontWeight: FONT_WEIGHT.normal,
-  color: cssVar('violet'),
-  opacity: OPACITY.prominent,
-  margin: `0 0 ${SPACING[2]}`,
-  fontStyle: 'italic',
 };
 
 const tagLabelStyle: React.CSSProperties = {

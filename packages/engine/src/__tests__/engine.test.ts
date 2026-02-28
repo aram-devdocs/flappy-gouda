@@ -29,7 +29,7 @@ function makeConfig(overrides: Partial<GameConfig> = {}): GameConfig {
 }
 
 function makePipe(overrides: Partial<Pipe> = {}): Pipe {
-  return { x: 200, topH: 100, scored: false, gap: 162, ...overrides };
+  return { x: 200, topH: 100, scored: false, gap: DEFAULT_CONFIG.pipeGap, ...overrides };
 }
 
 // --- physics.ts ---

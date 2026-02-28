@@ -1,4 +1,3 @@
-import { getDifficultyProfile } from '@repo/engine';
 import { useGameEngine, useGameInput } from '@repo/hooks';
 import type { DifficultyKey, FlappyGoudaGameProps } from '@repo/types';
 import { DIFF_KEYS, Difficulty, GameState as GS } from '@repo/types';
@@ -17,7 +16,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { GameErrorBoundary } from './GameErrorBoundary';
 import { LeaderboardOverlay } from './LeaderboardOverlay';
-import { DEATH_FLAVOR, useDeathStats } from './useDeathStats';
+import { useDeathStats } from './useDeathStats';
 import { useDebugBridge } from './useDebugBridge';
 import type { SettingsView } from './useGameCallbacks';
 import { useGameCallbacks } from './useGameCallbacks';
@@ -70,19 +69,24 @@ export function FlappyGoudaGame({
   const [settingsView, setSettingsView] = useState<SettingsView>('closed');
   const lb = useLeaderboardState(state, score, difficulty, nickname, leaderboardCallbacks);
   const liveRank = useLiveRank(engineRef, engineReady, state, leaderboard);
-  const { deathStats, deathIsNewBest } = useDeathStats(
-    state,
-    engineRef,
-    score,
-    bestScores,
-    difficulty,
-  );
+  const { deathIsNewBest } = useDeathStats(state, engineRef, score, bestScores, difficulty);
   useEffect(() => {
     onStateChange?.(state);
   }, [state, onStateChange]);
   useEffect(() => {
     onScoreChange?.(score);
   }, [score, onScoreChange]);
+  // Subscribe directly to engine scoreChange events for live broadcasting.
+  // React state only flushes on state transitions, so callers that need
+  // per-point updates (like live score broadcast) must listen to the engine.
+  useEffect(() => {
+    if (!engineReady || !onScoreChange) return;
+    const engine = engineRef.current;
+    if (!engine) return;
+    const handler = (s: number) => onScoreChange(s);
+    engine.on('scoreChange', handler);
+    return () => engine.off('scoreChange', handler);
+  }, [engineReady, onScoreChange, engineRef]);
   useEffect(() => {
     onBestScoreChange?.(bestScores);
   }, [bestScores, onBestScoreChange]);
@@ -120,8 +124,6 @@ export function FlappyGoudaGame({
   const currentBest = bestScores[difficulty] ?? 0;
   const isOverlayVisible = state !== GS.Play || settingsView !== 'closed';
   const hasCallbacks = !!leaderboardCallbacks;
-  const profile = getDifficultyProfile(difficulty);
-
   return (
     <GameErrorBoundary>
       <GameLayout
@@ -151,7 +153,6 @@ export function FlappyGoudaGame({
           nicknameError={lb.nicknameError}
           nicknameChecking={lb.nicknameChecking}
           hasLeaderboard={hasCallbacks}
-          difficultySubtitle={profile.subtitle}
           difficulty={difficulty}
         />
         <GameOverScreen
@@ -160,16 +161,8 @@ export function FlappyGoudaGame({
           bestScore={currentBest}
           isNewBest={deathIsNewBest}
           rank={liveRank.rank}
-          phaseName={deathStats?.phaseName ?? null}
-          clutchCount={deathStats?.clutchCount}
-          longestCleanStreak={deathStats?.longestCleanStreak}
-          flavorText={DEATH_FLAVOR[difficulty]}
         />
-        <LiveRankOverlay
-          visible={state === GS.Play && !!leaderboard}
-          rank={liveRank.rank}
-          improving={liveRank.improving}
-        />
+        <LiveRankOverlay visible={false} rank={null} improving={false} />
         <SettingsMenu
           visible={settingsView === 'menu'}
           nickname={nickname ?? null}

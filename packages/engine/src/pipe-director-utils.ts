@@ -4,22 +4,22 @@ import { MovementArc, PatternType as PT } from '@repo/types';
 /** Phrase count range [min, max] for each arc phase, keyed by difficulty. */
 export const ARC_LENGTHS: Record<string, Record<MovementArc, [number, number]>> = {
   easy: {
-    [MovementArc.Build]: [4, 5],
-    [MovementArc.Climax]: [1, 1],
-    [MovementArc.Release]: [2, 3],
-  },
-  normal: {
     [MovementArc.Build]: [3, 4],
     [MovementArc.Climax]: [1, 2],
     [MovementArc.Release]: [1, 2],
   },
-  hard: {
+  normal: {
     [MovementArc.Build]: [2, 3],
     [MovementArc.Climax]: [2, 3],
     [MovementArc.Release]: [1, 1],
   },
-  souls: {
+  hard: {
     [MovementArc.Build]: [1, 2],
+    [MovementArc.Climax]: [2, 3],
+    [MovementArc.Release]: [1, 1],
+  },
+  souls: {
+    [MovementArc.Build]: [1, 1],
     [MovementArc.Climax]: [3, 4],
     [MovementArc.Release]: [1, 1],
   },
@@ -41,8 +41,8 @@ export const CLIMAX_PATTERNS = new Set<PatternType>([
   PT.StairDown,
 ]);
 
-export const PHRASE_MIN = 3;
-export const PHRASE_MAX = 8;
+export const PHRASE_MIN = 2;
+export const PHRASE_MAX = 6;
 export const MAX_REROLLS = 3;
 export const MIN_TIMING_FLOOR_MS = 200;
 

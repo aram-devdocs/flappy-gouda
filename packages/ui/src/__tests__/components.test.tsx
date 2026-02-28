@@ -71,18 +71,6 @@ describe('GameOverScreen', () => {
     expect(screen.getByText('New Best!')).toBeDefined();
     expect(screen.queryByText('Best: 50')).toBeNull();
   });
-
-  it('shows phase reached when phaseName is provided', () => {
-    render(<GameOverScreen visible score={42} bestScore={100} phaseName="Intensification" />);
-    expect(screen.getByText('Reached: Intensification')).toBeDefined();
-  });
-
-  it('shows flavor text when provided', () => {
-    render(
-      <GameOverScreen visible score={5} bestScore={10} flavorText="So close. One more try?" />,
-    );
-    expect(screen.getByText('So close. One more try?')).toBeDefined();
-  });
 });
 
 describe('DifficultyBadge', () => {

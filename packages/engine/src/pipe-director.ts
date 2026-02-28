@@ -22,6 +22,13 @@ import {
 import type { ProgressionManager } from './progression';
 import { validateAndClamp } from './winnability';
 
+/** Optional log callback for debug panel integration. */
+export type DirectorLogFn = (
+  type: 'director' | 'pattern',
+  message: string,
+  data?: Record<string, unknown>,
+) => void;
+
 /**
  * Orchestrates pipe placement using phrase-based patterns, movement arc cycling,
  * and winnability validation. Owns the intent queue and narrative rhythm.
@@ -34,6 +41,7 @@ export class PipeDirector {
   private arcPhraseIdx = 0;
   private arcTarget = 0;
   private phrasesSinceBreather = 0;
+  private log: DirectorLogFn | null = null;
   constructor(
     private progression: ProgressionManager,
     private readonly profile: DifficultyProfile,
@@ -41,6 +49,10 @@ export class PipeDirector {
   ) {
     this.lastCenter = config.height / 2;
     this.arcTarget = this.rollArcLength(MovementArc.Build);
+  }
+
+  setLogFn(fn: DirectorLogFn): void {
+    this.log = fn;
   }
 
   get currentArc(): MovementArc {
@@ -115,6 +127,23 @@ export class PipeDirector {
     this.lastCenter = prev;
     this.lastPattern = pattern;
     this.phrasesSinceBreather++;
+
+    if (this.log) {
+      const breatherTag = breatherOverdue ? ' [breather]' : '';
+      this.log(
+        'pattern',
+        `${pattern} ×${count} i=${intensity.toFixed(2)} arc=${this.arc}${breatherTag}`,
+        {
+          pattern,
+          count,
+          intensity,
+          arc: this.arc,
+          gap: this.progression.effectiveGap,
+          speed: this.progression.effectiveSpeed,
+        },
+      );
+    }
+
     this.advanceArc();
   }
 
@@ -154,8 +183,10 @@ export class PipeDirector {
     this.arcPhraseIdx++;
     if (this.arcPhraseIdx < this.arcTarget) return;
     this.arcPhraseIdx = 0;
+    const prev = this.arc;
     this.arc = nextArcPhase(this.arc);
     this.arcTarget = this.rollArcLength(this.arc);
+    this.log?.('director', `Arc: ${prev} → ${this.arc} (${this.arcTarget} phrases)`);
   }
 
   private rollArcLength(arc: MovementArc): number {
